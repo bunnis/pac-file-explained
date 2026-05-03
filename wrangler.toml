@@ -2,7 +2,6 @@ name = "pac-file-explained"
 main = "worker.js"
 compatibility_date = "2026-05-03"
 
-
 routes = [
   { pattern = "pac-file-explained.dev/*", zone_name = "pac-file-explained.dev" }
 ]
