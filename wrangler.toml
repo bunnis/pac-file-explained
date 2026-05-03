@@ -1,4 +1,4 @@
-name = "pac-file-explained.dev"
+name = "pac-file-explained"
 main = "worker.js"
 compatibility_date = "2026-05-03"
 
