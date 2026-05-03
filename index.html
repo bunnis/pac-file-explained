@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAC Explained — Proxy Auto-Configuration Reference</title>
+<meta name="description" content="The complete Proxy Auto-Configuration (PAC) file reference. Every function, best practices, security, WPAD, testing tools, and a live tester. pac-file-explained.dev — community replacement for findproxyforurl.com.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
+<!-- <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX" crossorigin="anonymous"></script> -->
+
+<!-- Carbon Ads (recommended for developer audiences — apply at carbonads.com) -->
+<!-- <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=YOUR_CODE&placement=pacexplainedcom" id="_carbonads_js"></script> -->
+
+<style>
+/* ═══════════════════════════════════════ THEMES ═══ */
+[data-theme="dark"] {
+  --bg:          #0d0f14;
+  --bg2:         #13161e;
+  --bg3:         #1a1e28;
+  --border:      #242836;
+  --border2:     #2e3447;
+  --text:        #c8cfe0;
+  --text-dim:    #6b7490;
+  --text-bright: #eef0f8;
+  --accent:      #5af0a8;
+  --accent2:     #3dd4e8;
+  --accent-dim:  #1a4a38;
+  --warn:        #f0c05a;
+  --warn-dim:    #3a2e10;
+  --warn-text:   #d4a84a;
+  --err:         #f05a7a;
+  --code-bg:     #090b0f;
+  --fn-color:    #a78bfa;
+  --str-color:   #5af0a8;
+  --num-color:   #f0c05a;
+  --kw-color:    #3dd4e8;
+  --cm-color:    #455070;
+  --hero-glow:   radial-gradient(ellipse 55% 45% at 25% 40%, rgba(90,240,168,.06), transparent);
+  --card-hover:  #2e3447;
+  --badge-fn-bg: rgba(167,139,250,.12);
+  --shadow:      0 2px 16px rgba(0,0,0,.4);
+}
+[data-theme="light"] {
+  --bg:          #f2f4fb;
+  --bg2:         #ffffff;
+  --bg3:         #e8ecf7;
+  --border:      #d8ddf0;
+  --border2:     #bec6df;
+  --text:        #3a4268;
+  --text-dim:    #8090b8;
+  --text-bright: #0d1228;
+  --accent:      #0a7a48;
+  --accent2:     #0870a0;
+  --accent-dim:  #d0eed8;
+  --warn:        #7a5500;
+  --warn-dim:    #fff3cc;
+  --warn-text:   #7a5500;
+  --err:         #cc0030;
+  --code-bg:     #e4e8f8;
+  --fn-color:    #5e35b1;
+  --str-color:   #1a7040;
+  --num-color:   #a05000;
+  --kw-color:    #0870a0;
+  --cm-color:    #8090b8;
+  --hero-glow:   radial-gradient(ellipse 55% 45% at 25% 40%, rgba(10,122,72,.05), transparent);
+  --card-hover:  #bec6df;
+  --badge-fn-bg: rgba(94,53,177,.1);
+  --shadow:      0 2px 16px rgba(0,0,0,.1);
+}
+
+/* ═══════════════════════════════════════ RESET ═══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.7;
+  min-height:100vh;transition:background .2s,color .2s;
+}
+
+/* ═══════════════════════════════════════ LAYOUT ═══ */
+.site-wrapper{display:flex;min-height:100vh}
+
+/* Sidebar */
+nav{
+  width:252px;min-width:252px;flex-shrink:0;
+  background:var(--bg2);border-right:1px solid var(--border);
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+  padding-bottom:1.5rem;
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+  transition:background .2s,border-color .2s;z-index:20;
+}
+nav::-webkit-scrollbar{width:4px}
+nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* Content area — centers main on wide screens */
+.content-area{flex:1;min-width:0;display:flex;justify-content:center}
+main{
+  width:100%;max-width:880px;
+  padding:0 clamp(1.25rem,5vw,4rem) 6rem;
+}
+
+/* ═══════════════════════════════════════ NAV ═══ */
+.nav-logo{
+  padding:1.25rem 1.1rem .9rem;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;
+}
+.nav-logo a{text-decoration:none}
+.nav-logo-name{
+  font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:600;
+  color:var(--accent);letter-spacing:-.02em;
+}
+.nav-logo-sub{font-size:.62rem;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
+
+.theme-toggle{
+  background:none;border:1px solid var(--border2);color:var(--text-dim);
+  border-radius:6px;width:28px;height:28px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:.85rem;
+  flex-shrink:0;margin-top:1px;transition:border-color .15s,color .15s;
+}
+.theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Collapsible nav groups */
+.nav-group{margin-bottom:.1rem}
+.nav-group-label{
+  font-size:.61rem;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--text-dim);padding:.6rem 1.1rem .25rem;font-weight:500;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;user-select:none;transition:color .15s;
+}
+.nav-group-label:hover{color:var(--text)}
+.nav-caret{font-size:.65rem;transition:transform .2s;opacity:.6}
+.nav-group.collapsed .nav-caret{transform:rotate(-90deg)}
+.nav-group-links{
+  overflow:hidden;max-height:600px;transition:max-height .25s ease;
+  padding:0 .45rem;
+}
+.nav-group.collapsed .nav-group-links{max-height:0}
+nav a{
+  display:block;padding:.27rem .75rem;color:var(--text-dim);
+  text-decoration:none;font-size:.8rem;border-radius:5px;
+  transition:color .15s,background .15s;
+}
+nav a:hover{color:var(--text-bright);background:var(--bg3)}
+nav a.active{color:var(--accent);background:var(--accent-dim)}
+nav a.fn-link{
+  color:var(--fn-color);opacity:.75;
+  font-family:'IBM Plex Mono',monospace;font-size:.73rem;
+}
+nav a.fn-link:hover{opacity:1;background:var(--badge-fn-bg)}
+
+.nav-footer{
+  margin-top:1rem;padding:1rem 1.1rem .5rem;
+  border-top:1px solid var(--border);
+  display:flex;flex-direction:column;gap:.5rem;
+}
+.bmc-btn{
+  display:flex;align-items:center;justify-content:center;gap:.45rem;
+  background:#ffdd00;color:#000;font-family:'DM Sans',sans-serif;
+  font-size:.75rem;font-weight:500;padding:.45rem .75rem;
+  border-radius:6px;text-decoration:none;transition:opacity .15s;
+  border:none;cursor:pointer;
+}
+.bmc-btn:hover{opacity:.88}
+.bmc-btn svg{width:14px;height:14px;flex-shrink:0}
+.nav-gh{
+  display:flex;align-items:center;gap:.4rem;
+  font-size:.75rem;color:var(--text-dim);text-decoration:none;
+  padding:.3rem .75rem;border-radius:5px;transition:color .15s,background .15s;
+}
+.nav-gh:hover{color:var(--text-bright);background:var(--bg3)}
+.nav-gh svg{width:14px;height:14px;flex-shrink:0}
+
+/* ═══════════════════════════════════════ HERO ═══ */
+.hero{
+  padding:4.5rem 0 3rem;border-bottom:1px solid var(--border);margin-bottom:3.5rem;
+  position:relative;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:var(--hero-glow);pointer-events:none;
+}
+.hero-tag{
+  font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);
+  letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.1rem;
+  display:flex;align-items:center;gap:.5rem;
+}
+.hero-tag::before{content:'';display:block;width:22px;height:1px;background:var(--accent)}
+.hero h1{
+  font-family:'Instrument Serif',serif;font-size:clamp(2.1rem,4.5vw,3.4rem);
+  color:var(--text-bright);line-height:1.1;font-weight:400;margin-bottom:1rem;
+}
+.hero h1 em{color:var(--accent);font-style:italic}
+.hero-lead{font-size:.97rem;color:var(--text);max-width:560px;line-height:1.75;margin-bottom:1.75rem}
+.hero-code{
+  display:inline-flex;align-items:center;gap:1rem;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
+  padding:.65rem 1.15rem;font-family:'IBM Plex Mono',monospace;font-size:.82rem;
+  color:var(--text-bright);
+}
+.hero-code .kw{color:var(--kw-color)}.hero-code .fn{color:var(--fn-color)}
+.hero-code .cm{color:var(--cm-color)}
+
+/* ═══════════════════════════════════════ SECTIONS ═══ */
+section{margin-bottom:3.5rem}
+section>h2{
+  font-family:'Instrument Serif',serif;font-size:1.7rem;
+  color:var(--text-bright);font-weight:400;margin-bottom:.4rem;padding-top:.25rem;
+}
+.section-lead{
+  color:var(--text-dim);font-size:.87rem;margin-bottom:1.6rem;
+  border-bottom:1px solid var(--border);padding-bottom:.8rem;
+}
+.anchor-target{scroll-margin-top:1.5rem}
+
+/* ═══════════════════════════════════════ ORIGIN BANNER ═══ */
+.origin-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:8px;
+  padding:1.2rem 1.4rem;font-size:.88rem;color:var(--text);
+  line-height:1.75;margin-bottom:1.5rem;
+}
+.origin-card p+p{margin-top:.6rem}
+.origin-card strong{color:var(--text-bright)}
+.origin-card a{color:var(--accent);text-underline-offset:3px}
+
+/* ═══════════════════════════════════════ ALERT STYLES ═══ */
+.alert{
+  display:flex;gap:.75rem;border-radius:7px;
+  padding:.8rem 1.1rem;font-size:.83rem;line-height:1.65;margin-bottom:1.2rem;
+}
+.alert-warn{
+  background:var(--warn-dim);border:1px solid rgba(240,192,90,.25);color:var(--warn-text);
+}
+.alert-warn::before{content:'⚠';flex-shrink:0}
+.alert-info{
+  background:var(--accent-dim);border:1px solid rgba(90,240,168,.2);color:var(--accent);
+}
+.alert-info::before{content:'ℹ';flex-shrink:0}
+.alert-danger{
+  background:#200a10;border:1px solid rgba(240,90,122,.2);color:#f07090;
+}
+.alert-danger::before{content:'⛔';flex-shrink:0}
+.alert code{font-family:'IBM Plex Mono',monospace;font-size:.85em}
+
+/* ═══════════════════════════════════════ FUNCTION CARDS ═══ */
+.fn-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:1.1rem;overflow:hidden;transition:border-color .2s;
+}
+.fn-card:target{border-color:var(--fn-color);box-shadow:0 0 0 3px var(--badge-fn-bg)}
+.fn-header{
+  padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;
+}
+.fn-sig{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;color:var(--text-bright);word-break:break-all}
+.fn-sig .fn-name{color:var(--fn-color)}
+.fn-sig .fn-param{color:var(--str-color);font-style:italic;font-weight:400}
+.fn-sig .fn-paren{color:var(--text-dim)}
+.fn-sig .fn-opt{color:var(--warn);font-weight:400;font-size:.8em}
+.fn-badge{
+  font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;
+  padding:.18rem .55rem;border-radius:100px;white-space:nowrap;margin-top:2px;
+}
+.badge-bool{background:#1a3a5a;color:var(--accent2);border:1px solid #1e4a70}
+.badge-str{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(90,240,168,.25)}
+.badge-num{background:var(--warn-dim);color:var(--warn);border:1px solid rgba(240,192,90,.2)}
+.badge-void{background:var(--bg3);color:var(--text-dim);border:1px solid var(--border2)}
+.fn-body{padding:1.3rem 1.4rem}
+.fn-desc{color:var(--text);font-size:.88rem;line-height:1.75;margin-bottom:1.1rem}
+.fn-desc code{
+  font-family:'IBM Plex Mono',monospace;font-size:.85em;
+  color:var(--accent);background:var(--accent-dim);
+  padding:.1em .4em;border-radius:3px;
+}
+
+/* ═══════════════════════════════════════ PARAMS TABLE ═══ */
+.params-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:1.1rem}
+.params-table th{
+  text-align:left;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);padding:.45rem .7rem;border-bottom:1px solid var(--border);
+  font-weight:500;
+}
+.params-table td{padding:.55rem .7rem;vertical-align:top;border-bottom:1px solid var(--border);color:var(--text)}
+.params-table td:first-child{font-family:'IBM Plex Mono',monospace;color:var(--str-color);font-size:.78rem;white-space:nowrap;width:120px}
+.params-table td:nth-child(2){color:var(--warn);font-family:'IBM Plex Mono',monospace;font-size:.75rem;width:75px}
+.params-table tr:last-child td{border-bottom:none}
+
+/* ═══════════════════════════════════════ CODE BLOCKS ═══ */
+.code-block{
+  background:var(--code-bg);border:1px solid var(--border);
+  border-radius:8px;overflow:hidden;font-size:.8rem;margin-bottom:1.1rem;
+}
+.code-header{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:.45rem .95rem;background:var(--bg3);border-bottom:1px solid var(--border);
+  font-size:.68rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;
+}
+.code-block pre{
+  padding:1.15rem 1.4rem;overflow-x:auto;
+  font-family:'IBM Plex Mono',monospace;line-height:1.7;color:var(--text);
+}
+/* syntax highlights */
+.code-block pre .kw{color:var(--kw-color)}
+.code-block pre .fn{color:var(--fn-color)}
+.code-block pre .str{color:var(--str-color)}
+.code-block pre .num{color:var(--num-color)}
+.code-block pre .cm{color:var(--cm-color);font-style:italic}
+.code-block pre .ret{color:var(--warn)}
+
+.copy-btn{
+  background:none;border:1px solid var(--border2);color:var(--text-dim);
+  padding:.13rem .55rem;border-radius:4px;cursor:pointer;
+  font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;
+  transition:border-color .15s,color .15s;
+}
+.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
+.copy-btn.copied{border-color:var(--accent);color:var(--accent)}
+
+/* ═══════════════════════════════════════ RETURN VALUE GRID ═══ */
+.ret-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.ret-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:1.1rem 1.2rem;
+}
+.ret-card-name{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;color:var(--warn);margin-bottom:.4rem}
+.ret-card-desc{font-size:.84rem;color:var(--text);line-height:1.65}
+.ret-card-ex{
+  font-family:'IBM Plex Mono',monospace;font-size:.73rem;color:var(--str-color);
+  background:var(--code-bg);border-radius:5px;padding:.45rem .7rem;margin-top:.65rem;
+  word-break:break-all;
+}
+
+/* ═══════════════════════════════════════ EXAMPLE CARDS ═══ */
+.example-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:1.75rem;overflow:hidden}
+.example-header{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);background:var(--bg3)}
+.example-header h3{font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:400;color:var(--text-bright);margin-bottom:.2rem}
+.example-header p{font-size:.8rem;color:var(--text-dim)}
+.example-body .code-block{margin:0;border:none;border-radius:0}
+.example-body .code-header{background:var(--bg2)}
+
+/* ═══════════════════════════════════════ BEST PRACTICES / INFO CARDS ═══ */
+.bp-list{list-style:none;display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
+.bp-list li{
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:.85rem 1.1rem;font-size:.87rem;color:var(--text);line-height:1.65;
+  display:flex;gap:.75rem;align-items:flex-start;
+}
+.bp-list li .bp-icon{flex-shrink:0;font-size:.95rem;margin-top:.05rem}
+.bp-list li code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
+.bp-list li strong{color:var(--text-bright)}
+
+/* ═══════════════════════════════════════ TROUBLESHOOT TABLE ═══ */
+.trouble-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-bottom:1.25rem}
+.trouble-table th{
+  text-align:left;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--text-dim);padding:.5rem .85rem;border-bottom:1px solid var(--border);font-weight:500;
+}
+.trouble-table td{
+  padding:.65rem .85rem;vertical-align:top;border-bottom:1px solid var(--border);color:var(--text);
+  font-size:.83rem;line-height:1.6;
+}
+.trouble-table td:first-child{
+  color:var(--err);font-family:'IBM Plex Mono',monospace;font-size:.78rem;
+  white-space:nowrap;vertical-align:top;padding-top:.7rem;
+}
+.trouble-table tr:last-child td{border-bottom:none}
+.trouble-table code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
+
+/* ═══════════════════════════════════════ PERF BADGES ═══ */
+.perf-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
+.perf-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;
+}
+.perf-card-name{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:600;color:var(--fn-color);margin-bottom:.3rem}
+.perf-card-cost{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
+.perf-cost-high{color:var(--err)}.perf-cost-med{color:var(--warn)}.perf-cost-low{color:var(--accent)}
+.perf-card-desc{font-size:.79rem;color:var(--text-dim);line-height:1.55}
+
+/* ═══════════════════════════════════════ AD SLOT ═══ */
+.ad-slot{
+  background:var(--bg2);border:1px dashed var(--border2);border-radius:8px;
+  padding:.9rem 1.1rem;text-align:center;font-size:.75rem;color:var(--text-dim);
+  margin-bottom:2rem;min-height:60px;display:flex;align-items:center;justify-content:center;
+}
+
+/* ═══════════════════════════════════════ WPAD STEPS ═══ */
+.steps{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
+.step{
+  display:flex;gap:1rem;align-items:flex-start;
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;
+}
+.step-num{
+  background:var(--accent);color:#0a1a10;border-radius:50%;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:.1rem;font-family:'IBM Plex Mono',monospace;
+}
+.step-body{font-size:.86rem;color:var(--text);line-height:1.65}
+.step-body strong{color:var(--text-bright)}
+.step-body code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
+
+/* ═══════════════════════════════════════ TESTER ═══ */
+.tester-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tester-header{padding:1.3rem 1.4rem;border-bottom:1px solid var(--border);background:var(--bg3)}
+.tester-header h3{font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:400;color:var(--text-bright);margin-bottom:.2rem}
+.tester-header p{font-size:.8rem;color:var(--text-dim)}
+.tester-body{padding:1.4rem;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+.tester-col label{display:block;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin-bottom:.45rem}
+.tester-col textarea,.tester-col input{
+  width:100%;background:var(--code-bg);border:1px solid var(--border2);border-radius:7px;
+  color:var(--text-bright);font-family:'IBM Plex Mono',monospace;font-size:.78rem;
+  padding:.7rem .95rem;outline:none;line-height:1.65;transition:border-color .15s;
+}
+.tester-col textarea{min-height:260px;resize:vertical}
+.tester-col textarea:focus,.tester-col input:focus{border-color:var(--accent)}
+.tester-col input{margin-bottom:.65rem}
+.tester-run{
+  width:100%;background:var(--accent);color:#0a1a10;border:none;
+  padding:.7rem;border-radius:7px;font-family:'IBM Plex Mono',monospace;
+  font-size:.82rem;font-weight:600;cursor:pointer;letter-spacing:.05em;
+  transition:opacity .15s,transform .1s;
+}
+.tester-run:hover{opacity:.9}
+.tester-run:active{transform:scale(.98)}
+.tester-result{
+  margin-top:.65rem;background:var(--code-bg);border:1px solid var(--border2);
+  border-radius:7px;padding:.7rem .95rem;font-family:'IBM Plex Mono',monospace;
+  font-size:.8rem;min-height:56px;color:var(--text-dim);white-space:pre-wrap;word-break:break-all;
+}
+.tester-result.ok{color:var(--accent);border-color:rgba(90,240,168,.3)}
+.tester-result.err{color:var(--err);border-color:rgba(240,90,122,.25);background:#0f080d}
+
+/* ═══════════════════════════════════════ INLINE UTILS ═══ */
+.icode{font-family:'IBM Plex Mono',monospace;font-size:.84em;color:var(--accent);background:var(--accent-dim);padding:.1em .4em;border-radius:3px}
+.mt{margin-top:1rem}
+footer{border-top:1px solid var(--border);padding:1.75rem 0 0;margin-top:3rem;font-size:.77rem;color:var(--text-dim)}
+footer a{color:var(--text-dim);text-underline-offset:3px}
+footer a:hover{color:var(--accent)}
+
+/* ═══════════════════════════════════════ RESPONSIVE ═══ */
+@media(max-width:860px){
+  nav{display:none}
+  .tester-body{grid-template-columns:1fr}
+  .ret-grid{grid-template-columns:1fr}
+  .perf-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:480px){
+  .perf-grid{grid-template-columns:1fr}
+  .hero{padding:2.5rem 0 2rem}
+}
+</style>
+</head>
+<body>
+<div class="site-wrapper">
+
+<!-- ════════════════════════════════════════ SIDEBAR ════ -->
+<nav id="sidebar">
+  <div class="nav-logo">
+    <a href="#top">
+      <div class="nav-logo-name">pac explained</div>
+      <div class="nav-logo-sub">PAC File Reference</div>
+    </a>
+    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">☀</button>
+  </div>
+
+  <div class="nav-group" id="ng-overview">
+    <div class="nav-group-label" onclick="toggleGroup('ng-overview')">Overview<span class="nav-caret">▾</span></div>
+    <div class="nav-group-links">
+      <a href="#about">About this site</a>
+      <a href="#intro">What is a PAC file?</a>
+      <a href="#quickstart">Quick start</a>
+      <a href="#return-values">Return values</a>
+      <a href="#proxy-chaining">Proxy chaining</a>
+    </div>
+  </div>
+
+  <div class="nav-group" id="ng-functions">
+    <div class="nav-group-label" onclick="toggleGroup('ng-functions')">Function reference<span class="nav-caret">▾</span></div>
+    <div class="nav-group-links">
+      <a href="#isPlainHostName" class="fn-link">isPlainHostName()</a>
+      <a href="#dnsDomainIs" class="fn-link">dnsDomainIs()</a>
+      <a href="#localHostOrDomainIs" class="fn-link">localHostOrDomainIs()</a>
+      <a href="#isResolvable" class="fn-link">isResolvable()</a>
+      <a href="#isInNet" class="fn-link">isInNet()</a>
+      <a href="#dnsResolve" class="fn-link">dnsResolve()</a>
+      <a href="#myIpAddress" class="fn-link">myIpAddress()</a>
+      <a href="#dnsDomainLevels" class="fn-link">dnsDomainLevels()</a>
+      <a href="#shExpMatch" class="fn-link">shExpMatch()</a>
+      <a href="#weekdayRange" class="fn-link">weekdayRange()</a>
+      <a href="#dateRange" class="fn-link">dateRange()</a>
+      <a href="#timeRange" class="fn-link">timeRange()</a>
+      <a href="#alert-fn" class="fn-link">alert()</a>
+    </div>
+  </div>
+
+  <div class="nav-group" id="ng-advanced">
+    <div class="nav-group-label" onclick="toggleGroup('ng-advanced')">Advanced<span class="nav-caret">▾</span></div>
+    <div class="nav-group-links">
+      <a href="#perf">Compute-intensive functions</a>
+      <a href="#special">Special use cases</a>
+    </div>
+  </div>
+
+  <div class="nav-group" id="ng-guides">
+    <div class="nav-group-label" onclick="toggleGroup('ng-guides')">Guides<span class="nav-caret">▾</span></div>
+    <div class="nav-group-links">
+      <a href="#best-practices">Best practices</a>
+      <a href="#security">Security</a>
+      <a href="#wpad">WPAD auto-discovery</a>
+    </div>
+  </div>
+
+  <div class="nav-group" id="ng-devtools">
+    <div class="nav-group-label" onclick="toggleGroup('ng-devtools')">Dev tools<span class="nav-caret">▾</span></div>
+    <div class="nav-group-links">
+      <a href="#testing">Testing &amp; debugging</a>
+      <a href="#troubleshooting">Troubleshooting</a>
+    </div>
+  </div>
+
+  <div class="nav-group" id="ng-ref">
+    <div class="nav-group-label" onclick="toggleGroup('ng-ref')">Examples<span class="nav-caret">▾</span></div>
+    <div class="nav-group-links">
+      <a href="#examples">Common examples</a>
+      <a href="#live-tester">Live tester</a>
+    </div>
+  </div>
+
+  <div class="nav-footer">
+    <a class="bmc-btn" href="https://buymeacoffee.com/abskulaity" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.216 6.415l-.132-.666c-.119-.598-.388-1.163-1.001-1.379-.197-.069-.42-.098-.57-.241-.152-.143-.196-.366-.231-.572-.065-.378-.125-.756-.192-1.133-.057-.325-.102-.69-.25-.987-.195-.4-.597-.634-.996-.788a5.723 5.723 0 00-.626-.194c-1-.263-2.05-.36-3.077-.416a25.834 25.834 0 00-3.7.062c-.915.083-1.88.184-2.75.5-.318.116-.646.256-.888.501-.297.302-.393.77-.177 1.146.154.267.415.456.692.58.36.162.737.284 1.123.366 1.075.238 2.189.331 3.287.37 1.218.05 2.437.01 3.65-.118.299-.033.598-.073.896-.119.352-.054.578-.513.474-.834-.124-.383-.457-.531-.834-.473-.466.074-.96.108-1.382.146-1.177.08-2.358.082-3.536.006a22.228 22.228 0 01-1.157-.107c-.086-.01-.18-.025-.258-.036-.243-.036-.484-.08-.724-.13-.111-.027-.111-.185 0-.212h.005c.277-.06.557-.108.838-.147h.002c.131-.009.263-.032.394-.048a25.076 25.076 0 013.426-.12c.674.019 1.347.067 2.017.144l.228.031c.267.04.533.088.798.145.392.085.895.113 1.07.542.055.137.08.288.111.431l.319 1.484a.237.237 0 01-.199.284h-.003c-.037.006-.075.01-.112.015a36.704 36.704 0 01-4.743.295 37.059 37.059 0 01-4.699-.304c-.14-.017-.293-.042-.417-.06-.326-.048-.649-.108-.973-.161-.393-.065-.768-.032-1.123.161-.29.16-.527.404-.675.701-.154.316-.199.66-.267 1-.069.34-.176.707-.135 1.056.087.753.613 1.copy3 1.338 1.498.204.056.412.101.621.143.59.117 1.187.211 1.787.29C9.68 19.304 10.876 19.44 12.07 19.44c1.046 0 2.09-.104 3.12-.29.37-.067.738-.153 1.101-.256.247-.068.494-.14.736-.223.763-.262 1.39-.836 1.619-1.625.075-.262.106-.54.096-.812-.015-.418-.168-.811-.404-1.119-.128-.17-.286-.316-.467-.424z"/></svg>
+      Buy me a coffee
+    </a>
+    <a class="nav-gh" href="https://github.com/bunnis/pac-file-explained" target="_blank" rel="noopener">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/></svg>
+      GitHub
+    </a>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════ MAIN ════ -->
+<div class="content-area">
+<main id="top">
+
+<!-- AD SLOT (top) — replace with your Carbon Ads or AdSense code -->
+<!-- Carbon Ads example:
+<div class="ad-slot" id="carbon-slot">
+  <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=YOUR_CODE&placement=pacexplainedcom" id="_carbonads_js"></script>
+</div>
+-->
+
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-tag">Proxy Auto-Configuration</div>
+  <h1>The PAC file<br><em>reference</em> you need.</h1>
+  <p class="hero-lead">
+    Every function, return value, best practices, security guide, WPAD, testing tools,
+    and a live in-browser tester — all in one place.
+  </p>
+  <div class="hero-code">
+    <span><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span style="color:var(--str-color)">url</span>, <span style="color:var(--str-color)">host</span>) {</span>
+    <span class="cm">// ← you write this</span>
+  </div>
+</div>
+
+<!-- ── ABOUT ── -->
+<section id="about" class="anchor-target">
+  <h2>About this site</h2>
+  <p class="section-lead">Why this page exists.</p>
+
+  <div class="origin-card">
+    <p>
+      <strong>findproxyforurl.com</strong> was for years the go-to reference for anyone writing or debugging
+      PAC files — a clean, no-frills page that documented every helper function with working examples.
+      When it went offline, it left a real gap: most alternative documentation is scattered across MDN,
+      MSDN knowledge-base articles, and decade-old forum threads.
+    </p>
+    <p>
+      This site was built to fill that gap. It covers everything findproxyforurl.com did — and more:
+      best practices, security considerations, WPAD auto-discovery, performance guidance, testing
+      workflows, and an in-browser PAC tester. It's open-source and community-maintained.
+    </p>
+    <p>
+      Found an error or want to contribute?
+      <a href="https://github.com/bunnis/pac-file-explained" target="_blank" rel="noopener">Open a pull request on GitHub.</a>
+    </p>
+  </div>
+</section>
+
+<!-- ── WHAT IS A PAC FILE ── -->
+<section id="intro" class="anchor-target">
+  <h2>What is a PAC file?</h2>
+  <p class="section-lead">A plain-text JavaScript file that tells browsers which proxy to use, per request.</p>
+
+  <p class="fn-desc">
+    A <strong>Proxy Auto-Configuration</strong> (PAC) file contains exactly one JavaScript function:
+    <code class="icode">FindProxyForURL(url, host)</code>. Browsers call this function for every outbound
+    request. Your function inspects the URL and hostname and returns a string telling the browser what to do.
+    PAC files were introduced by Netscape in 1996 and remain broadly supported across all major browsers and
+    operating systems today.
+  </p>
+
+  <table class="params-table">
+    <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+    <tr>
+      <td>url</td><td>string</td>
+      <td>The full URL being requested. <strong>For HTTPS, the path and query are stripped</strong> — only scheme + host + port are available. This is a known browser security restriction.</td>
+    </tr>
+    <tr>
+      <td>host</td><td>string</td>
+      <td>The hostname extracted from the URL. Port numbers are removed. Identical to the host portion of the URL.</td>
+    </tr>
+  </table>
+
+  <div class="alert alert-info">
+    PAC files run in a <strong>sandboxed JavaScript environment</strong>. Standard browser APIs
+    (<code>window</code>, <code>fetch</code>, <code>XMLHttpRequest</code>, <code>localStorage</code>,
+    <code>setTimeout</code>) are unavailable. Only the built-in PAC helper functions listed on this page work.
+  </div>
+</section>
+
+<!-- ── QUICK START ── -->
+<section id="quickstart" class="anchor-target">
+  <h2>Quick start</h2>
+  <p class="section-lead">A solid production template to build from.</p>
+
+  <div class="code-block">
+    <div class="code-header"><span>proxy.pac — production template</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// 1. Bypass proxy for plain (unqualified) hostnames</span>
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// 2. Bypass for internal corporate domains</span>
+  <span class="kw">if</span> (   <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.internal"</span>)
+      || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// 3. Bypass for RFC1918 private ranges — resolve once, reuse</span>
+  <span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);
+  <span class="kw">if</span> (ip &amp;&amp; (
+       <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"172.16.0.0"</span>,  <span class="str">"255.240.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"127.0.0.0"</span>,   <span class="str">"255.0.0.0"</span>))) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// 4. Everything else: primary proxy → fallback proxy → direct</span>
+  <span class="kw">return</span> <span class="str">"PROXY proxy1.corp.com:8080; PROXY proxy2.corp.com:8080; DIRECT"</span>;
+}</pre>
+  </div>
+</section>
+
+<!-- ── RETURN VALUES ── -->
+<section id="return-values" class="anchor-target">
+  <h2>Return values</h2>
+  <p class="section-lead">Strings returned by <code class="icode">FindProxyForURL</code> control how each request is routed.</p>
+
+  <div class="ret-grid">
+    <div class="ret-card">
+      <div class="ret-card-name">DIRECT</div>
+      <div class="ret-card-desc">Connect directly to the destination server. No proxy is used.</div>
+      <div class="ret-card-ex">"DIRECT"</div>
+    </div>
+    <div class="ret-card">
+      <div class="ret-card-name">PROXY host:port</div>
+      <div class="ret-card-desc">Route through an HTTP/HTTPS proxy at the given host and port.</div>
+      <div class="ret-card-ex">"PROXY proxy.corp.com:8080"</div>
+    </div>
+    <div class="ret-card">
+      <div class="ret-card-name">SOCKS host:port</div>
+      <div class="ret-card-desc">Route through a SOCKS proxy (v4 or v5). Broadly supported shorthand.</div>
+      <div class="ret-card-ex">"SOCKS socks.corp.com:1080"</div>
+    </div>
+    <div class="ret-card">
+      <div class="ret-card-name">SOCKS4 / SOCKS5</div>
+      <div class="ret-card-desc">Explicitly select SOCKS version 4 or 5 when the version matters.</div>
+      <div class="ret-card-ex">"SOCKS5 socks5.corp.com:1080"</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PROXY CHAINING ── -->
+<section id="proxy-chaining" class="anchor-target">
+  <h2>Proxy chaining &amp; fallback</h2>
+  <p class="section-lead">Multiple directives in a return string create an ordered fallback chain.</p>
+
+  <p class="fn-desc">
+    When you return multiple directives separated by semicolons, the browser tries them
+    <strong>strictly left to right, in the order written</strong>. It only moves to the next
+    directive if the current one is unreachable or times out — it does <em>not</em> load-balance
+    across them automatically.
+  </p>
+
+  <div class="code-block">
+    <div class="code-header"><span>fallback chain — evaluated left → right</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><span class="kw">return</span> <span class="str">"PROXY primary.corp.com:8080; PROXY backup.corp.com:8080; DIRECT"</span>;
+<span class="cm">//      ↑ tried first          ↑ tried if primary fails  ↑ last resort</span></pre>
+  </div>
+
+  <ul class="bp-list">
+    <li><span class="bp-icon">①</span><div>The browser connects to <strong>primary.corp.com:8080</strong> first. If it responds, all traffic goes through it.</div></li>
+    <li><span class="bp-icon">②</span><div>If <code>primary</code> is unreachable or times out, the browser automatically retries via <strong>backup.corp.com:8080</strong>.</div></li>
+    <li><span class="bp-icon">③</span><div><code>DIRECT</code> at the end means if both proxies fail, the browser will attempt a <strong>direct connection</strong> as a last resort. Omit <code>DIRECT</code> if you never want requests to bypass the proxy.</div></li>
+    <li><span class="bp-icon">⚠</span><div>Proxy failover adds latency — the browser must wait for a connection timeout before trying the next entry. Keep fallback chains short and use reliable primary proxies.</div></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════ FUNCTION REFERENCE ══════════════════════ -->
+<section>
+  <h2>Function reference</h2>
+  <p class="section-lead">All built-in PAC helper functions with full signatures, parameters, and examples.</p>
+
+  <!-- isPlainHostName -->
+  <div class="fn-card anchor-target" id="isPlainHostName">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isPlainHostName</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if <code>host</code> contains no dots — meaning it is an unqualified short hostname like <code>localhost</code> or <code>intranet</code> rather than a fully-qualified domain name. The classic, zero-cost test for "is this an internal host?"</p>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>host</td><td>string</td><td>The hostname portion of the URL (no port).</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">isPlainHostName</span>(<span class="str">"www"</span>)            <span class="cm">// true  — no dots</span>
+<span class="fn">isPlainHostName</span>(<span class="str">"www.google.com"</span>) <span class="cm">// false — has dots</span>
+
+<span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// bypass proxy for intranet names</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dnsDomainIs -->
+  <div class="fn-card anchor-target" id="dnsDomainIs">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsDomainIs</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">, </span><span class="fn-param">domain</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if <code>host</code> belongs to the given <code>domain</code> via suffix match. The domain must start with a leading dot. Note: this does <em>not</em> match the bare apex domain — <code>"mozilla.org"</code> does not match <code>".mozilla.org"</code>. No DNS lookup is performed.</p>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>host</td><td>string</td><td>Hostname to test.</td></tr>
+        <tr><td>domain</td><td>string</td><td>Domain to match — must start with a dot, e.g. <code>".example.com"</code>.</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">dnsDomainIs</span>(<span class="str">"www.mozilla.org"</span>, <span class="str">".mozilla.org"</span>)  <span class="cm">// true</span>
+<span class="fn">dnsDomainIs</span>(<span class="str">"mozilla.org"</span>,     <span class="str">".mozilla.org"</span>)  <span class="cm">// false — no subdomain!</span>
+<span class="fn">dnsDomainIs</span>(<span class="str">"www.google.com"</span>,  <span class="str">".mozilla.org"</span>)  <span class="cm">// false</span>
+
+<span class="kw">if</span> (   <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.internal"</span>)
+    || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- localHostOrDomainIs -->
+  <div class="fn-card anchor-target" id="localHostOrDomainIs">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">localHostOrDomainIs</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">, </span><span class="fn-param">hostdom</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if <code>host</code> matches <code>hostdom</code> exactly, <em>or</em> if host is the short (unqualified) version of <code>hostdom</code>. This lets you match both <code>www</code> and <code>www.example.com</code> in a single call.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">localHostOrDomainIs</span>(<span class="str">"www.mozilla.org"</span>, <span class="str">"www.mozilla.org"</span>) <span class="cm">// true</span>
+<span class="fn">localHostOrDomainIs</span>(<span class="str">"www"</span>,             <span class="str">"www.mozilla.org"</span>) <span class="cm">// true  (short name)</span>
+<span class="fn">localHostOrDomainIs</span>(<span class="str">"www.google.com"</span>,  <span class="str">"www.mozilla.org"</span>) <span class="cm">// false</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- isResolvable -->
+  <div class="fn-card anchor-target" id="isResolvable">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isResolvable</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Performs a live DNS lookup for <code>host</code>. Returns <code>true</code> if the hostname resolves, <code>false</code> if not. <strong>Triggers a real DNS query</strong> — adds latency to every PAC evaluation. Prefer <code>dnsDomainIs()</code> or <code>shExpMatch()</code> where possible.</p>
+      <div class="alert alert-warn">DNS queries block the browser during PAC evaluation. See the <a href="#perf">Compute-intensive functions</a> section for strategies to minimise DNS calls.</div>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm">// Go direct if hostname resolves in internal DNS</span>
+<span class="kw">if</span> (<span class="fn">isResolvable</span>(host)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}
+<span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- isInNet -->
+  <div class="fn-card anchor-target" id="isInNet">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isInNet</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">, </span><span class="fn-param">pattern</span><span class="fn-paren">, </span><span class="fn-param">mask</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the IP address of <code>host</code> falls within the subnet defined by <code>pattern</code> and <code>mask</code>. If <code>host</code> is a hostname (not already an IP), a DNS lookup is triggered internally. <strong>Always pass a pre-resolved IP</strong> via <code>dnsResolve(host)</code> to avoid double lookups and silent failures.</p>
+      <div class="alert alert-warn">Always use dotted-decimal IP addresses in <code>pattern</code> — never hostnames. Passing a hostname to <code>pattern</code> can fail silently in some implementations.</div>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>host</td><td>string</td><td>IP address or hostname to test. Prefer passing a pre-resolved IP.</td></tr>
+        <tr><td>pattern</td><td>string</td><td>Network address, e.g. <code>"10.0.0.0"</code>.</td></tr>
+        <tr><td>mask</td><td>string</td><td>Subnet mask, e.g. <code>"255.255.0.0"</code>.</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example — resolve once, test multiple subnets</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host); <span class="cm">// resolve once</span>
+<span class="kw">if</span> (ip &amp;&amp; (
+     <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+  || <span class="fn">isInNet</span>(ip, <span class="str">"172.16.0.0"</span>,  <span class="str">"255.240.0.0"</span>)
+  || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>))) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dnsResolve -->
+  <div class="fn-card anchor-target" id="dnsResolve">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsResolve</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Resolves a hostname to its IP address. Returns a dotted-decimal string (e.g. <code>"93.184.216.34"</code>), or an empty string <code>""</code> on failure. Always store the result in a variable and reuse it — calling <code>dnsResolve()</code> multiple times for the same host triggers multiple DNS queries.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);     <span class="cm">// one DNS call — store and reuse</span>
+<span class="kw">if</span> (!ip) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; } <span class="cm">// guard against resolution failure</span>
+
+<span class="kw">if</span> (<span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>, <span class="str">"255.0.0.0"</span>)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- myIpAddress -->
+  <div class="fn-card anchor-target" id="myIpAddress">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">myIpAddress</span><span class="fn-paren">()</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns the IP address of the <em>client machine</em> as a dotted-decimal string. Useful for routing decisions based on the client's subnet — for example, picking a regionally appropriate proxy. In some environments this returns <code>"127.0.0.1"</code> — see <a href="#troubleshooting">Troubleshooting</a>.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm">// Select a regional proxy based on the client's subnet</span>
+<span class="kw">var</span> myip = <span class="fn">myIpAddress</span>();
+
+<span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.1.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY eu-proxy.corp.com:8080"</span>;
+}
+<span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.2.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY us-proxy.corp.com:8080"</span>;
+}
+<span class="kw">return</span> <span class="str">"DIRECT"</span>;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dnsDomainLevels -->
+  <div class="fn-card anchor-target" id="dnsDomainLevels">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsDomainLevels</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-num">→ number</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns the number of dots in the hostname. <code>"intranet"</code> → 0, <code>"mozilla.org"</code> → 1, <code>"www.mozilla.org"</code> → 2. A DNS-free alternative to <code>isPlainHostName()</code> that also works for multi-level internal domains.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">dnsDomainLevels</span>(<span class="str">"www"</span>)             <span class="cm">// 0</span>
+<span class="fn">dnsDomainLevels</span>(<span class="str">"mozilla.org"</span>)     <span class="cm">// 1</span>
+<span class="fn">dnsDomainLevels</span>(<span class="str">"www.mozilla.org"</span>) <span class="cm">// 2</span>
+
+<span class="kw">if</span> (<span class="fn">dnsDomainLevels</span>(host) &lt; <span class="num">2</span>) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// treat short names as internal</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- shExpMatch -->
+  <div class="fn-card anchor-target" id="shExpMatch">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">shExpMatch</span><span class="fn-paren">(</span><span class="fn-param">str</span><span class="fn-paren">, </span><span class="fn-param">shexp</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Matches <code>str</code> against a shell glob pattern. <code>*</code> matches any sequence of characters, <code>?</code> matches any single character. This is <em>not</em> a regular expression. Can be applied to both <code>host</code> and the full <code>url</code> — no DNS lookup is triggered.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">shExpMatch</span>(<span class="str">"www.google.com"</span>,  <span class="str">"*.google.*"</span>)         <span class="cm">// true</span>
+<span class="fn">shExpMatch</span>(<span class="str">"www.bing.com"</span>,    <span class="str">"*.google.*"</span>)         <span class="cm">// false</span>
+<span class="fn">shExpMatch</span>(<span class="str">"ftp://example.com/pub"</span>, <span class="str">"ftp:*"</span>)       <span class="cm">// true</span>
+
+<span class="cm">// Match on full URL (including path — works for HTTP, not HTTPS)</span>
+<span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"https://api.example.com/*"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY fast-proxy.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- weekdayRange -->
+  <div class="fn-card anchor-target" id="weekdayRange">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">weekdayRange</span><span class="fn-paren">(</span><span class="fn-param">wd1</span><span class="fn-paren">, </span><span class="fn-param">wd2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">gmt</span><span class="fn-opt">[opt]</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the current day falls within the specified range. Valid values: <code>"SUN"</code> <code>"MON"</code> <code>"TUE"</code> <code>"WED"</code> <code>"THU"</code> <code>"FRI"</code> <code>"SAT"</code>. Ranges wrap around — <code>weekdayRange("FRI","MON")</code> matches Fri, Sat, Sun, Mon. Append <code>"GMT"</code> to use UTC.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">if</span> (   <span class="fn">weekdayRange</span>(<span class="str">"MON"</span>, <span class="str">"FRI"</span>)
+    &amp;&amp; <span class="fn">timeRange</span>(<span class="num">8</span>, <span class="num">18</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>; <span class="cm">// business hours</span>
+}
+<span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// evenings and weekends go direct</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dateRange -->
+  <div class="fn-card anchor-target" id="dateRange">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dateRange</span><span class="fn-paren">(</span><span class="fn-param">day1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">month1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">year1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">day2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">month2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">year2</span><span class="fn-opt">[opt]</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the current date falls within the given range. Month names: <code>"JAN"</code>–<code>"DEC"</code>. Day numbers: 1–31. Years: four-digit. Arguments can be mixed and matched — you can specify just months, just years, or full date ranges. Append <code>"GMT"</code> for UTC.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">dateRange</span>(<span class="str">"JAN"</span>, <span class="str">"MAR"</span>)                       <span class="cm">// true in Q1</span>
+<span class="fn">dateRange</span>(<span class="num">1</span>, <span class="str">"JAN"</span>, <span class="num">2025</span>, <span class="num">31</span>, <span class="str">"DEC"</span>, <span class="num">2025</span>) <span class="cm">// true all of 2025</span>
+<span class="fn">dateRange</span>(<span class="num">1</span>, <span class="num">15</span>)                              <span class="cm">// true on days 1–15 of any month</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- timeRange -->
+  <div class="fn-card anchor-target" id="timeRange">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">timeRange</span><span class="fn-paren">(</span><span class="fn-param">hour1</span><span class="fn-paren">, </span><span class="fn-param">min1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">sec1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">hour2</span><span class="fn-paren">, </span><span class="fn-param">min2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">sec2</span><span class="fn-opt">[opt]</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the current time falls within the given range. Hours use 24-hour format (0–23). Specify just hours, hours+minutes, or full hours+minutes+seconds. Append <code>"GMT"</code> for UTC evaluation.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">timeRange</span>(<span class="num">9</span>, <span class="num">17</span>)         <span class="cm">// true between 09:00 and 17:00</span>
+<span class="fn">timeRange</span>(<span class="num">9</span>, <span class="num">30</span>, <span class="num">17</span>, <span class="num">0</span>)  <span class="cm">// true between 09:30 and 17:00</span>
+<span class="fn">timeRange</span>(<span class="num">12</span>)            <span class="cm">// true during 12:00:00–12:59:59</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- alert -->
+  <div class="fn-card anchor-target" id="alert-fn">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">alert</span><span class="fn-paren">(</span><span class="fn-param">message</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-void">→ void</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Outputs a debug message during PAC evaluation. In Firefox it appears in the browser console. <strong>Not available in all environments</strong> — in some browsers, calling <code>alert()</code> silently breaks PAC evaluation entirely.</p>
+      <div class="alert alert-danger">Never ship <code>alert()</code> calls in a production PAC file. Remove all debug calls before deploying.</div>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="fn">alert</span>(<span class="str">"PAC: evaluating host = "</span> + host);
+<span class="fn">alert</span>(<span class="fn">isInNet</span>(<span class="fn">dnsResolve</span>(host), <span class="str">"10.0.0.0"</span>, <span class="str">"255.0.0.0"</span>));</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ COMPUTE INTENSIVE ══════════════════════ -->
+<section id="perf" class="anchor-target">
+  <h2>Compute-intensive functions</h2>
+  <p class="section-lead">Some PAC functions trigger synchronous DNS lookups that block the browser. Know which ones to avoid.</p>
+
+  <p class="fn-desc">
+    PAC evaluation is <strong>synchronous and blocking</strong> — the browser freezes the request
+    until <code>FindProxyForURL</code> returns. Functions that perform DNS resolution amplify this
+    effect: every DNS round-trip adds tens to hundreds of milliseconds to every request.
+  </p>
+
+  <div class="perf-grid">
+    <div class="perf-card">
+      <div class="perf-card-name">dnsResolve()</div>
+      <div class="perf-card-cost perf-cost-high">● High cost</div>
+      <div class="perf-card-desc">Always triggers a live DNS lookup. Cache the result in a variable — never call twice for the same host.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">isResolvable()</div>
+      <div class="perf-card-cost perf-cost-high">● High cost</div>
+      <div class="perf-card-desc">Performs a DNS lookup on every call. Replace with <code>dnsDomainIs()</code> or <code>shExpMatch()</code> wherever possible.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">isInNet() + hostname</div>
+      <div class="perf-card-cost perf-cost-high">● High cost</div>
+      <div class="perf-card-desc">If the first argument is a hostname (not an IP), isInNet() internally calls dnsResolve(). Always pre-resolve.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">isInNet() + IP</div>
+      <div class="perf-card-cost perf-cost-low">● No cost</div>
+      <div class="perf-card-desc">If you pass a pre-resolved IP (from dnsResolve), no additional DNS lookup occurs. This is the correct pattern.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">dnsDomainIs()</div>
+      <div class="perf-card-cost perf-cost-low">● No cost</div>
+      <div class="perf-card-desc">Pure string suffix match. Zero DNS overhead. Always prefer this over isResolvable() for domain checks.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">shExpMatch()</div>
+      <div class="perf-card-cost perf-cost-low">● No cost</div>
+      <div class="perf-card-desc">Pure string glob match. Zero DNS overhead. Good for URL and host pattern matching.</div>
+    </div>
+  </div>
+
+  <p class="fn-desc">The golden rule:</p>
+
+  <div class="code-block">
+    <div class="code-header"><span>DNS optimisation pattern</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// ✓ FAST: domain checks first — zero DNS cost</span>
+  <span class="kw">if</span> (   <span class="fn">isPlainHostName</span>(host)
+      || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)
+      || <span class="fn">shExpMatch</span>(host, <span class="str">"*.local"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// ✓ ONE DNS call — stored and reused below</span>
+  <span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);
+  <span class="kw">if</span> (!ip) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; } <span class="cm">// ✓ guard failure case</span>
+
+  <span class="cm">// ✓ FAST: isInNet receives an IP — no extra DNS</span>
+  <span class="kw">if</span> (   <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+      || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// ✗ WRONG — triggers a second DNS lookup for the same host:</span>
+  <span class="cm">// if (isInNet(dnsResolve(host), "10.0.0.0", "255.0.0.0")) { ... }</span>
+
+  <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
+}</pre>
+  </div>
+</section>
+
+<!-- ══════════════════════ SPECIAL USE CASES ══════════════════════ -->
+<section id="special" class="anchor-target">
+  <h2>Special use cases</h2>
+  <p class="section-lead">Advanced patterns for load balancing, geo-routing, and path-based routing.</p>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Load balancing by client IP last octet</h3>
+      <p>Deterministically split traffic between two proxies based on the client machine's IP address. Even-numbered last octet → proxy A; odd → proxy B. Each client is always sticky to the same proxy.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">var</span> myip     = <span class="fn">myIpAddress</span>();          <span class="cm">// e.g. "192.168.1.24"</span>
+  <span class="kw">var</span> parts    = myip.<span class="fn">split</span>(<span class="str">"."</span>);
+  <span class="kw">var</span> lastOctet = <span class="fn">parseInt</span>(parts[<span class="num">3</span>], <span class="num">10</span>);
+
+  <span class="kw">if</span> ((lastOctet % <span class="num">2</span>) === <span class="num">0</span>) {
+    <span class="cm">// EVEN → primary is proxy-a, fallback to proxy-b</span>
+    <span class="kw">return</span> <span class="str">"PROXY proxy-a.corp.com:8080; PROXY proxy-b.corp.com:8080"</span>;
+  } <span class="kw">else</span> {
+    <span class="cm">// ODD  → primary is proxy-b, fallback to proxy-a</span>
+    <span class="kw">return</span> <span class="str">"PROXY proxy-b.corp.com:8080; PROXY proxy-a.corp.com:8080"</span>;
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Load balancing by hostname hash</h3>
+      <p>Distribute requests across N proxies based on a hash of the target hostname. The same target host always routes to the same proxy — useful for connection reuse and cache warming.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">var</span> proxies = [
+    <span class="str">"PROXY proxy-0.corp.com:8080"</span>,
+    <span class="str">"PROXY proxy-1.corp.com:8080"</span>,
+    <span class="str">"PROXY proxy-2.corp.com:8080"</span>
+  ];
+
+  <span class="cm">// Simple hash: sum of char codes mod N</span>
+  <span class="kw">var</span> hash = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; host.length; i++) {
+    hash += host.<span class="fn">charCodeAt</span>(i);
+  }
+  <span class="kw">return</span> proxies[hash % proxies.length] + <span class="str">"; PROXY fallback.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Geo-routing by client subnet</h3>
+      <p>Route clients on different office subnets through their nearest regional proxy to minimise latency.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">var</span> myip = <span class="fn">myIpAddress</span>();
+
+  <span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.10.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-eu.corp.com:8080"</span>;   <span class="cm">// London office</span>
+  }
+  <span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.20.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-us.corp.com:8080"</span>;   <span class="cm">// New York office</span>
+  }
+  <span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.30.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-apac.corp.com:8080"</span>; <span class="cm">// Singapore office</span>
+  }
+  <span class="kw">return</span> <span class="str">"PROXY proxy-default.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>URL path-based routing</h3>
+      <p>Route different URL patterns to different proxies. Note: path matching only works for HTTP — HTTPS strips the path before PAC evaluation.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// Route API traffic to a dedicated high-bandwidth proxy</span>
+  <span class="kw">if</span> (   <span class="fn">shExpMatch</span>(url, <span class="str">"http://api.example.com/*"</span>)
+      || <span class="fn">dnsDomainIs</span>(host, <span class="str">".api.example.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY api-proxy.corp.com:8080"</span>;
+  }
+
+  <span class="cm">// Route streaming to a bypass proxy</span>
+  <span class="kw">if</span> (   <span class="fn">dnsDomainIs</span>(host, <span class="str">".netflix.com"</span>)
+      || <span class="fn">dnsDomainIs</span>(host, <span class="str">".spotify.com"</span>)
+      || <span class="fn">dnsDomainIs</span>(host, <span class="str">".youtube.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// bypass proxy for high-bandwidth streaming</span>
+  }
+
+  <span class="kw">return</span> <span class="str">"PROXY default.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ BEST PRACTICES ══════════════════════ -->
+<section id="best-practices" class="anchor-target">
+  <h2>Best practices</h2>
+  <p class="section-lead">Patterns that make PAC files reliable, fast, and maintainable.</p>
+
+  <ul class="bp-list">
+    <li><span class="bp-icon">①</span><div><strong>DNS-free checks go first.</strong> Order your conditions so that <code>isPlainHostName()</code>, <code>dnsDomainIs()</code>, and <code>shExpMatch()</code> are evaluated before anything that triggers DNS. The majority of internal traffic matches these checks and exits early — saving DNS round-trips for the rest.</div></li>
+    <li><span class="bp-icon">②</span><div><strong>Resolve DNS once.</strong> Assign <code>dnsResolve(host)</code> to a variable at the top of the function and reuse it for every <code>isInNet()</code> call. Calling <code>dnsResolve()</code> or <code>isResolvable()</code> multiple times for the same host multiplies your DNS cost.</div></li>
+    <li><span class="bp-icon">③</span><div><strong>Guard DNS failures.</strong> <code>dnsResolve()</code> returns an empty string <code>""</code> on failure, not <code>null</code>. Always check <code>if (ip &amp;&amp; ...)</code> before passing to <code>isInNet()</code> — an empty string will produce incorrect matches.</div></li>
+    <li><span class="bp-icon">④</span><div><strong>Logical operators at the start of lines.</strong> In multi-line conditions, place <code>||</code> and <code>&amp;&amp;</code> at the <em>beginning</em> of each continuation line, not the end. This way every line is self-contained — you can safely copy/paste, delete, or comment out any line without worrying about whether the <em>previous</em> line now has a dangling operator.</div></li>
+    <li><span class="bp-icon">⑤</span><div><strong>Always include a catch-all return.</strong> The last line of your function must unconditionally return something. If execution falls through without returning, the browser's behaviour is undefined — it may throw an error, go direct, or refuse the request entirely.</div></li>
+    <li><span class="bp-icon">⑥</span><div><strong>Serve with the correct MIME type.</strong> The PAC file must be served as <code>application/x-ns-proxy-autoconfig</code>. Some clients also accept <code>application/x-javascript-config</code> or <code>text/javascript</code>, but the former is the most widely supported. An incorrect MIME type will cause clients to silently ignore the file.</div></li>
+    <li><span class="bp-icon">⑦</span><div><strong>Keep fallback chains short.</strong> Each entry in a semicolon-separated return chain adds a full connection timeout before the browser moves to the next one. Limit yourself to two proxies plus <code>DIRECT</code> at most. If you need more proxies, use load balancing logic in the PAC file itself.</div></li>
+    <li><span class="bp-icon">⑧</span><div><strong>Version your PAC files.</strong> Add a comment at the top with a version number and date. PAC files are often cached aggressively — a version comment makes it easy to verify which version a client actually loaded during debugging.</div></li>
+    <li><span class="bp-icon">⑨</span><div><strong>Remove all <code>alert()</code> calls before deploying.</strong> Debug alerts break PAC evaluation in some browsers and can expose internal routing logic to end users. Use <code>pacparser</code> or browser DevTools for testing instead.</div></li>
+    <li><span class="bp-icon">⑩</span><div><strong>Use IP addresses in subnet patterns.</strong> In <code>isInNet(host, pattern, mask)</code>, <code>pattern</code> must always be a dotted-decimal IP — never a hostname. Hostnames in <code>pattern</code> can fail silently across browsers.</div></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════ SECURITY ══════════════════════ -->
+<section id="security" class="anchor-target">
+  <h2>Security</h2>
+  <p class="section-lead">PAC files are a high-value attack target. Understand the risks before deploying.</p>
+
+  <div class="alert alert-danger">A compromised or spoofed PAC file can silently redirect <em>all browser traffic</em> — including authenticated sessions — through an attacker-controlled proxy. Take PAC file security seriously.</div>
+
+  <ul class="bp-list">
+    <li><span class="bp-icon">🔒</span><div><strong>Serve PAC files over HTTPS.</strong> The original PAC spec used plain HTTP. A man-in-the-middle attacker on the same network can intercept an HTTP PAC request and inject a malicious PAC file, silently redirecting all your traffic. Always serve PAC files from an HTTPS URL.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>WPAD auto-discovery is inherently risky.</strong> WPAD uses DHCP and DNS to locate your PAC file automatically. A rogue DHCP server or DNS poisoning attack can serve any machine on the network a malicious PAC URL. Disable WPAD auto-discovery in environments where you don't control the network, and configure the PAC URL explicitly.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>Never embed credentials in PAC files.</strong> PAC files are served as plain text and cached in the browser. Never include proxy usernames, passwords, API keys, or any other secrets in your PAC file.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>Restrict PAC file access.</strong> Your PAC file server should only be accessible from internal networks. A publicly accessible PAC file reveals your internal network topology, proxy addresses, and IP ranges to anyone who fetches it.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>HTTPS path stripping is a known limitation.</strong> For HTTPS URLs, the browser only passes the scheme, host, and port to <code>FindProxyForURL</code> — the path and query are stripped before PAC evaluation. Do not rely on URL path matching for security-critical routing decisions involving HTTPS traffic.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>PAC files can be weaponised via DNS rebinding.</strong> A malicious PAC file could call <code>dnsResolve()</code> on attacker-controlled domains to map your internal IP space, or use <code>isInNet()</code> to probe your network topology. Keep PAC evaluation sandboxed and never serve third-party PAC files.</div></li>
+  </ul>
+</section>
+
+<!-- ══════════════════════ WPAD ══════════════════════ -->
+<section id="wpad" class="anchor-target">
+  <h2>WPAD auto-discovery</h2>
+  <p class="section-lead">How browsers automatically find your PAC file without manual configuration.</p>
+
+  <p class="fn-desc">
+    Web Proxy Auto-Discovery (WPAD) lets browsers find the PAC file URL automatically using DHCP or DNS,
+    eliminating the need to configure the PAC URL on every client machine. The convention is to name the
+    file <code class="icode">wpad.dat</code> (instead of <code class="icode">proxy.pac</code>) when using WPAD.
+  </p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><strong>DHCP first:</strong> The client sends a DHCP request on startup. If the DHCP server includes <strong>Option 252</strong> (WPAD URL), the client uses that URL to fetch the PAC file directly. This is the fastest and most reliable method.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><strong>DNS fallback:</strong> If DHCP doesn't provide a WPAD URL, the client tries DNS. It constructs candidate URLs by prepending <code>wpad.</code> to the domain: e.g. <code>http://wpad.corp.com/wpad.dat</code>. The first hostname that resolves and serves a valid PAC file wins.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><strong>Configure your server:</strong> Host <code>wpad.dat</code> at the WPAD URL with MIME type <code>application/x-ns-proxy-autoconfig</code>. Ensure the hostname <code>wpad.yourdomain.com</code> resolves in internal DNS.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><strong>Browser settings:</strong> Enable "Automatically detect proxy settings" in the browser or OS proxy configuration. On Windows this is under <em>Settings → Network → Proxy → Automatically detect settings</em>.</div>
+    </div>
+  </div>
+
+  <div class="alert alert-warn">WPAD is disabled by default in many modern browsers and OS configurations due to security risks (see <a href="#security">Security</a>). Consider configuring the PAC URL explicitly via Group Policy or MDM instead of relying on WPAD auto-discovery.</div>
+</section>
+
+<!-- ══════════════════════ TESTING ══════════════════════ -->
+<section id="testing" class="anchor-target">
+  <h2>Testing &amp; debugging</h2>
+  <p class="section-lead">How to validate your PAC file before deploying it to production.</p>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>pacparser — command-line PAC tester</h3>
+      <p>The most reliable way to test PAC files outside a browser. Runs the full PAC evaluation engine, not a simulation.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>bash — install and use pacparser</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm"># Install (macOS)</span>
+brew install pacparser
+
+<span class="cm"># Install (Ubuntu / Debian)</span>
+sudo apt install pacparser
+
+<span class="cm"># Install from source (all platforms)</span>
+<span class="cm"># https://github.com/manugarg/pacparser</span>
+
+<span class="cm"># Test a PAC file against a URL</span>
+pactester -p proxy.pac -u https://www.google.com -h www.google.com
+
+<span class="cm"># Expected output:</span>
+<span class="cm"># PROXY proxy.corp.com:8080</span>
+
+<span class="cm"># Test multiple URLs from a file</span>
+pactester -p proxy.pac -f urls.txt</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Firefox browser debugging</h3>
+      <p>Firefox exposes PAC file evaluation and <code>alert()</code> output in the browser console.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>firefox about:config + console</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm"># 1. Open about:config → set network.proxy.autoconfig_url to your PAC file URL</span>
+<span class="cm"># 2. Set network.proxy.type = 2 (use PAC file)</span>
+<span class="cm"># 3. Open DevTools → Browser Console (not page console)</span>
+<span class="cm"># 4. alert() calls in your PAC file appear as "PAC-alert: ..." messages</span>
+<span class="cm"># 5. Navigate to a URL and watch the console for evaluation output</span>
+
+<span class="cm"># Useful PAC debug snippet — add temporarily to your PAC file:</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span>PAC debug snippet (remove before deploying)</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">var</span> result = <span class="fn">_findProxy</span>(url, host);
+  <span class="fn">alert</span>(<span class="str">"PAC: "</span> + host + <span class="str">" → "</span> + result); <span class="cm">// shows in Firefox console</span>
+  <span class="kw">return</span> result;
+}
+
+<span class="kw">function</span> <span class="fn">_findProxy</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="cm">// your real logic here</span>
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+  <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Chrome / macOS netlog</h3>
+      <p>Chrome provides a network log viewer that shows PAC evaluation results per request.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>chrome netlog</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm"># Open chrome://net-export/ → Start Logging → browse → Stop</span>
+<span class="cm"># Open https://netlog-viewer.appspot.com/ → load the exported JSON</span>
+<span class="cm"># Filter events by "PAC_RESOLVE" to see per-request PAC results</span>
+
+<span class="cm"># macOS: test PAC from the command line using scutil</span>
+scutil --proxy    <span class="cm"># shows current proxy configuration</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <p class="fn-desc mt">Also try the <a href="#live-tester" style="color:var(--accent)">Live Tester</a> on this page for quick in-browser validation. It simulates all PAC helper functions and evaluates your PAC file client-side — no data is sent anywhere.</p>
+</section>
+
+<!-- ══════════════════════ TROUBLESHOOTING ══════════════════════ -->
+<section id="troubleshooting" class="anchor-target">
+  <h2>Troubleshooting</h2>
+  <p class="section-lead">Common PAC file bugs and how to fix them.</p>
+
+  <table class="trouble-table">
+    <tr>
+      <th>Symptom</th><th>Cause &amp; Fix</th>
+    </tr>
+    <tr>
+      <td>myIpAddress() returns 127.0.0.1</td>
+      <td>The browser can't determine the machine's external interface IP. This often happens on machines with no active network adapters or unusual routing tables. Some browsers (especially Chrome) always return <code>127.0.0.1</code> in certain OS configurations. Workaround: use subnet detection via <code>dnsResolve()</code> on a known internal host instead, or avoid <code>myIpAddress()</code>-based logic in WPAD deployments.</td>
+    </tr>
+    <tr>
+      <td>HTTPS URL path not available</td>
+      <td>Chrome, Firefox, and all modern browsers strip the path and query from HTTPS URLs before calling <code>FindProxyForURL</code>. You receive only <code>https://hostname:443</code>. <code>shExpMatch(url, "*/some/path*")</code> will <em>never</em> match for HTTPS. Path-based routing only works for plain HTTP.</td>
+    </tr>
+    <tr>
+      <td>PAC file changes not picked up</td>
+      <td>Browsers cache PAC files aggressively — often for the entire browser session. To force a reload: restart the browser completely, or use a short <code>Cache-Control: max-age=300</code> header on your PAC file server. During development, use <code>pacparser</code> to test outside the browser.</td>
+    </tr>
+    <tr>
+      <td>isInNet() always returns false</td>
+      <td>You're passing a hostname to <code>isInNet()</code> that failed DNS resolution — <code>dnsResolve()</code> returned <code>""</code>, and <code>isInNet("", ...)</code> returns false. Always guard: <code>var ip = dnsResolve(host); if (ip &amp;&amp; isInNet(ip, ...))</code>.</td>
+    </tr>
+    <tr>
+      <td>PAC file ignored entirely</td>
+      <td>Wrong MIME type. The server must respond with <code>Content-Type: application/x-ns-proxy-autoconfig</code>. A <code>text/plain</code> or missing content-type causes many browsers to silently reject the file.</td>
+    </tr>
+    <tr>
+      <td>alert() breaks PAC in IE/Edge</td>
+      <td>Internet Explorer and legacy Edge treat <code>alert()</code> as an invalid API in the PAC sandbox — calling it causes the entire PAC function to fail silently and the browser falls through to direct connection. Remove all <code>alert()</code> calls before deploying.</td>
+    </tr>
+    <tr>
+      <td>dnsDomainIs() misses apex domain</td>
+      <td><code>dnsDomainIs("example.com", ".example.com")</code> returns <code>false</code> — the bare apex doesn't match the dotted suffix. Combine with an exact check: <code>host === "example.com" || dnsDomainIs(host, ".example.com")</code>.</td>
+    </tr>
+    <tr>
+      <td>PAC works in Firefox but not Chrome</td>
+      <td>Chrome caches PAC results per-hostname for the duration of a network profile change, ignoring path-based differences. Chrome also resolves DNS from the host OS rather than the browser's DNS stack in some configurations. Test with <code>pacparser</code> to isolate PAC logic from browser-specific quirks.</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ══════════════════════ EXAMPLES ══════════════════════ -->
+<section id="examples" class="anchor-target">
+  <h2>Common examples</h2>
+  <p class="section-lead">Real-world PAC files for the most common deployment scenarios.</p>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Corporate: bypass internal, proxy external</h3>
+      <p>The most common enterprise pattern. Internal hosts and RFC1918 ranges go direct; everything else uses a proxy with failover.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// Fast checks first — no DNS cost</span>
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">if</span> (   <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.internal"</span>)
+      || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// One DNS call — reused for all subnet checks</span>
+  <span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);
+  <span class="kw">if</span> (ip &amp;&amp; (
+       <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"172.16.0.0"</span>,  <span class="str">"255.240.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"127.0.0.0"</span>,   <span class="str">"255.0.0.0"</span>))) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="kw">return</span> <span class="str">"PROXY proxy1.corp.com:8080; PROXY proxy2.corp.com:8080; DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Split-tunnel by protocol</h3>
+      <p>Route HTTP through one proxy, HTTPS through another, FTP directly.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"http:*"</span>))  { <span class="kw">return</span> <span class="str">"PROXY http-proxy.corp.com:8080"</span>; }
+  <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"https:*"</span>)) { <span class="kw">return</span> <span class="str">"PROXY ssl-proxy.corp.com:8443"</span>;  }
+  <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"ftp:*"</span>))   { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Time-based routing</h3>
+      <p>Use the corporate proxy during business hours; go direct outside those hours.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">if</span> (   <span class="fn">weekdayRange</span>(<span class="str">"MON"</span>, <span class="str">"FRI"</span>)
+      &amp;&amp; <span class="fn">timeRange</span>(<span class="num">8</span>, <span class="num">18</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
+  }
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>SOCKS5 with HTTP fallback</h3>
+      <p>Try a SOCKS5 proxy first, then fall back to an HTTP proxy, then direct.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+  <span class="kw">return</span> <span class="str">"SOCKS5 socks.corp.com:1080; PROXY proxy.corp.com:8080; DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════ LIVE TESTER ══════════════════════ -->
+<section id="live-tester" class="anchor-target">
+  <h2>Live tester</h2>
+  <p class="section-lead">Paste your PAC file and evaluate it against any URL — runs entirely in your browser. <kbd>Ctrl+Enter</kbd> to run.</p>
+
+  <div class="tester-wrap">
+    <div class="tester-header">
+      <h3>In-browser PAC evaluator</h3>
+      <p>All helper functions are simulated in JavaScript. No data is sent anywhere. DNS calls return simulated results.</p>
+    </div>
+    <div class="tester-body">
+      <div class="tester-col">
+        <label>Your PAC file</label>
+        <textarea id="pac-input" spellcheck="false">function FindProxyForURL(url, host) {
+  if (isPlainHostName(host)) { return "DIRECT"; }
+
+  if (   dnsDomainIs(host, ".corp.internal")
+      || dnsDomainIs(host, ".corp.com")) {
+    return "DIRECT";
+  }
+
+  var ip = dnsResolve(host);
+  if (ip && (
+       isInNet(ip, "10.0.0.0",    "255.0.0.0")
+    || isInNet(ip, "192.168.0.0", "255.255.0.0"))) {
+    return "DIRECT";
+  }
+
+  return "PROXY proxy.corp.com:8080; DIRECT";
+}</textarea>
+      </div>
+      <div class="tester-col">
+        <label>Test URL</label>
+        <input type="text" id="test-url" value="https://www.google.com" placeholder="https://example.com">
+        <label>Host override (optional)</label>
+        <input type="text" id="test-host" placeholder="Leave blank to extract from URL">
+        <button class="tester-run" onclick="runPAC()">▶  Run PAC</button>
+        <label style="margin-top:.65rem">Result</label>
+        <div class="tester-result" id="pac-result">Click "Run PAC" to evaluate…</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── AD SLOT (bottom) ── -->
+<!--
+  MONETISATION OPTIONS:
+  1. Carbon Ads (best for dev audiences — apply at carbonads.com)
+     <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=YOUR_CODE&placement=pacexplainedcom" id="_carbonads_js"></script>
+  2. Google AdSense (replace ca-pub-XXXXXX with your publisher ID after approval)
+     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXX" data-ad-slot="XXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
+     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  3. EthicalAds (ethical-ads.io) — privacy-first, good for open-source/dev tools
+-->
+
+<footer>
+  <p>
+    PAC Explained — community reference for Proxy Auto-Configuration.
+    Inspired by the original <em>findproxyforurl.com</em>.
+    Spec references:
+    <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Proxy_servers_and_tunneling/Proxy_Auto-Configuration_PAC_file" target="_blank" rel="noopener">MDN</a> ·
+    <a href="https://en.wikipedia.org/wiki/Proxy_auto-config" target="_blank" rel="noopener">Wikipedia</a> ·
+    <a href="https://github.com/manugarg/pacparser" target="_blank" rel="noopener">pacparser</a>
+    &nbsp;·&nbsp;
+    <a href="https://github.com/bunnis/pac-file-explained" target="_blank" rel="noopener">GitHub</a>
+    &nbsp;·&nbsp;
+    <a href="https://buymeacoffee.com/abskulaity" target="_blank" rel="noopener">Buy me a coffee ☕</a>
+  </p>
+</footer>
+</main>
+</div><!-- .content-area -->
+</div><!-- .site-wrapper -->
+
+<script>
+/* ──────────────────────────── THEME TOGGLE ──────────────────────────── */
+(function(){
+  const saved = localStorage.getItem('pac-theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', saved);
+  updateToggleIcon(saved);
+})();
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('pac-theme', next);
+  updateToggleIcon(next);
+}
+function updateToggleIcon(theme) {
+  const btn = document.querySelector('.theme-toggle');
+  if (btn) btn.textContent = theme === 'dark' ? '☀' : '☾';
+}
+
+/* ──────────────────────────── COLLAPSIBLE NAV ──────────────────────────── */
+function toggleGroup(id) {
+  const group = document.getElementById(id);
+  if (group) group.classList.toggle('collapsed');
+}
+
+/* ──────────────────────────── NAV ACTIVE STATE ──────────────────────────── */
+const anchors = document.querySelectorAll('.anchor-target[id], section[id]');
+const navLinks = document.querySelectorAll('nav a[href^="#"]');
+const io = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const lnk = document.querySelector(`nav a[href="#${e.target.id}"]`);
+      if (lnk) {
+        lnk.classList.add('active');
+        // auto-expand the parent group
+        const grp = lnk.closest('.nav-group');
+        if (grp && grp.classList.contains('collapsed')) grp.classList.remove('collapsed');
+      }
+    }
+  });
+}, { rootMargin: '-8% 0px -78% 0px' });
+anchors.forEach(a => io.observe(a));
+
+/* ──────────────────────────── COPY BUTTON ──────────────────────────── */
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+/* ──────────────────────────── PAC SIMULATOR ──────────────────────────── */
+function simulatePAC(code, testUrl, testHost) {
+  if (!testHost) {
+    try { testHost = new URL(testUrl).hostname; } catch(_) { testHost = testUrl; }
+  }
+
+  // ── Helper function implementations ──
+  function isPlainHostName(h) { return !h.includes('.'); }
+
+  function dnsDomainIs(h, domain) {
+    return h.toLowerCase().endsWith(domain.toLowerCase());
+  }
+
+  function localHostOrDomainIs(h, hdom) {
+    return h === hdom || (!h.includes('.') && hdom.startsWith(h + '.'));
+  }
+
+  function isResolvable(h) {
+    // Cannot do real DNS in browser — return true for well-formed hostnames
+    return /^[a-zA-Z0-9._-]+$/.test(h) && h.length > 0;
+  }
+
+  function dnsResolve(h) {
+    // In-browser simulation — return placeholder for known private ranges
+    if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) return h; // already an IP
+    if (/\.(internal|local|corp|lan|intranet)$/.test(h)) return '10.0.0.1'; // simulate internal
+    return ''; // simulate external resolution failure for accurate subnet tests
+  }
+
+  function myIpAddress() { return '192.168.1.100'; /* simulated */ }
+
+  function dnsDomainLevels(h) { return (h.match(/\./g)||[]).length; }
+
+  function shExpMatch(str, pattern) {
+    const rx = '^' + pattern
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/\?/g, '.') + '$';
+    return new RegExp(rx, 'i').test(str);
+  }
+
+  function ip2num(ip) {
+    return ip.split('.').reduce((a, b) => (a << 8 | parseInt(b, 10)) >>> 0, 0);
+  }
+
+  function isInNet(host, pattern, mask) {
+    if (!host) return false;
+    try {
+      return (ip2num(host) & ip2num(mask)) === (ip2num(pattern) & ip2num(mask));
+    } catch(_) { return false; }
+  }
+
+  function weekdayRange(wd1, wd2, gmt) {
+    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+    const useGmt = (wd2 === 'GMT' || gmt === 'GMT');
+    const today = useGmt ? new Date().getUTCDay() : new Date().getDay();
+    const d1 = days.indexOf(wd1);
+    const d2 = (typeof wd2 === 'string' && days.includes(wd2)) ? days.indexOf(wd2) : d1;
+    return d1 <= d2 ? today >= d1 && today <= d2 : today >= d1 || today <= d2;
+  }
+
+  function dateRange() {
+    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const args = Array.from(arguments);
+    const useGmt = args[args.length-1] === 'GMT';
+    if (useGmt) args.pop();
+    const now = new Date();
+    const m = useGmt ? now.getUTCMonth() : now.getMonth();
+    const d = useGmt ? now.getUTCDate() : now.getDate();
+    const y = useGmt ? now.getUTCFullYear() : now.getFullYear();
+    if (args.length === 1) {
+      const v = args[0];
+      if (typeof v === 'number' && v > 31) return y === v;
+      if (typeof v === 'number') return d === v;
+      if (typeof v === 'string') return m === months.indexOf(v);
+    }
+    return true; // simplified for multi-arg cases
+  }
+
+  function timeRange() {
+    const args = Array.from(arguments).filter(x => typeof x === 'number');
+    const now = new Date();
+    const cur = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    if (args.length === 2) return cur >= args[0]*3600 && cur < args[1]*3600;
+    if (args.length === 4) return cur >= args[0]*3600+args[1]*60 && cur < args[2]*3600+args[3]*60;
+    if (args.length === 6) return cur >= args[0]*3600+args[1]*60+args[2] && cur < args[3]*3600+args[4]*60+args[5];
+    if (args.length === 1) { const h = args[0]; return cur >= h*3600 && cur < (h+1)*3600; }
+    return true;
+  }
+
+  function alert(msg) { console.log('[PAC alert]', msg); }
+
+  const wrapArgs = [
+    'isPlainHostName','dnsDomainIs','localHostOrDomainIs','isResolvable',
+    'dnsResolve','myIpAddress','dnsDomainLevels','shExpMatch','isInNet',
+    'weekdayRange','dateRange','timeRange','alert'
+  ];
+
+  const wrapVals = [
+    isPlainHostName, dnsDomainIs, localHostOrDomainIs, isResolvable,
+    dnsResolve, myIpAddress, dnsDomainLevels, shExpMatch, isInNet,
+    weekdayRange, dateRange, timeRange, alert
+  ];
+
+  const fn = new Function(...wrapArgs, 'url', 'host',
+    code + '\nreturn FindProxyForURL(url, host);'
+  );
+
+  return fn(...wrapVals, testUrl, testHost);
+}
+
+function runPAC() {
+  const code = document.getElementById('pac-input').value.trim();
+  const url  = document.getElementById('test-url').value.trim();
+  const host = document.getElementById('test-host').value.trim();
+  const el   = document.getElementById('pac-result');
+
+  el.className = 'tester-result';
+  el.textContent = 'Evaluating…';
+  try {
+    const r = simulatePAC(code, url, host);
+    el.textContent = r;
+    el.classList.add('ok');
+  } catch(e) {
+    el.textContent = 'Error: ' + e.message;
+    el.classList.add('err');
+  }
+}
+
+document.getElementById('pac-input').addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === 'Enter') runPAC();
+});
+document.getElementById('test-url').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runPAC();
+});
+</script>
+</body>
+</html>

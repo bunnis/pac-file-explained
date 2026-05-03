@@ -1,0 +1,12 @@
+name = "pac-file-explained.dev"
+main = "worker.js"
+compatibility_date = "2026-05-03"
+
+
+routes = [
+  { pattern = "pac-file-explained.dev/*", zone_name = "pac-file-explained.dev" }
+]
+
+[build]
+# Tell wrangler to bundle index.html as a text module
+# so it can be imported in worker.js
