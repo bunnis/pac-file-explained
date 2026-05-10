@@ -6,460 +6,33 @@
 <title>PAC Explained — Proxy Auto-Configuration Reference</title>
 <meta name="description" content="The complete Proxy Auto-Configuration (PAC) file reference. Every function, best practices, security, WPAD, testing tools, and a live tester. pac-file-explained.dev — community replacement for findproxyforurl.com.">
 
+<!-- Preconnect to font origins so the TCP+TLS handshake is done before the
+     stylesheet requests the font files. This is the main lever for the
+     640 ms LCP element render delay reported by Lighthouse. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<!-- Google Fonts — loaded as a standard stylesheet with display=swap so the
+     browser renders body text immediately with a fallback font and swaps in
+     the web font when it arrives. No print/onload trick needed (and no inline
+     event handler that would require 'unsafe-inline' in script-src). -->
 <link rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap"
-      media="print"
-      onload="this.media='all'">
-<noscript>
-  <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap">
-</noscript>
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap">
 
-<!-- Google AdSense — replace ca-pub-XXXXXXXXXXXXXXXX with your publisher ID -->
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-8036763385530087" crossorigin="anonymous"></script> 
+<!-- Site stylesheet served by the Worker at /styles.css -->
+<link rel="stylesheet" href="/styles.css">
 
-<!-- Carbon Ads (recommended for developer audiences — apply at carbonads.com) -->
-<!-- <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=YOUR_CODE&placement=pacexplainedcom" id="_carbonads_js"></script> -->
-
-<style>
-/* ═══════════════════════════════════════ THEMES ═══ */
-[data-theme="dark"] {
-  --bg:          #0d0f14;
-  --bg2:         #13161e;
-  --bg3:         #1a1e28;
-  --border:      #242836;
-  --border2:     #2e3447;
-  --text:        #c8cfe0;
-  --text-dim:    #8892b0;
-  --text-bright: #eef0f8;
-  --accent:      #5af0a8;
-  --accent2:     #3dd4e8;
-  --accent-dim:  #1a4a38;
-  --warn:        #f0c05a;
-  --warn-dim:    #3a2e10;
-  --warn-text:   #d4a84a;
-  --err:         #f05a7a;
-  --code-bg:     #090b0f;
-  --fn-color:    #a78bfa;
-  --str-color:   #5af0a8;
-  --num-color:   #f0c05a;
-  --kw-color:    #3dd4e8;
-  --cm-color:    #6a7a9e;
-  --hero-glow:   radial-gradient(ellipse 55% 45% at 25% 40%, rgba(90,240,168,.06), transparent);
-  --card-hover:  #2e3447;
-  --badge-fn-bg: rgba(167,139,250,.12);
-  --shadow:      0 2px 16px rgba(0,0,0,.4);
-}
-[data-theme="light"] {
-  --bg:          #f2f4fb;
-  --bg2:         #ffffff;
-  --bg3:         #e8ecf7;
-  --border:      #d8ddf0;
-  --border2:     #bec6df;
-  --text:        #3a4268;
-  --text-dim:    #4e5c84;
-  --text-bright: #0d1228;
-  --accent:      #0a7a48;
-  --accent2:     #0870a0;
-  --accent-dim:  #d0eed8;
-  --warn:        #7a5500;
-  --warn-dim:    #fff3cc;
-  --warn-text:   #7a5500;
-  --err:         #cc0030;
-  --code-bg:     #e4e8f8;
-  --fn-color:    #5e35b1;
-  --str-color:   #1a7040;
-  --num-color:   #a05000;
-  --kw-color:    #0870a0;
-  --cm-color:    #4e5c84;
-  --hero-glow:   radial-gradient(ellipse 55% 45% at 25% 40%, rgba(10,122,72,.05), transparent);
-  --card-hover:  #bec6df;
-  --badge-fn-bg: rgba(94,53,177,.1);
-  --shadow:      0 2px 16px rgba(0,0,0,.1);
-}
-
-/* ═══════════════════════════════════════ RESET ═══ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{
-  background:var(--bg);color:var(--text);
-  font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.7;
-  min-height:100vh;transition:background .2s,color .2s;
-}
-
-/* ═══════════════════════════════════════ LAYOUT ═══ */
-.site-wrapper{display:flex;min-height:100vh}
-
-/* Sidebar */
-nav{
-  width:252px;min-width:252px;flex-shrink:0;
-  background:var(--bg2);border-right:1px solid var(--border);
-  position:sticky;top:0;height:100vh;overflow-y:auto;
-  padding-bottom:1.5rem;
-  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
-  transition:background .2s,border-color .2s;z-index:20;
-}
-nav::-webkit-scrollbar{width:4px}
-nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
-/* Content area — centers main on wide screens */
-.content-area{flex:1;min-width:0;display:flex;justify-content:center}
-main{
-  width:100%;max-width:880px;
-  padding:0 clamp(1.25rem,5vw,4rem) 6rem;
-}
-
-/* ═══════════════════════════════════════ NAV ═══ */
-.nav-logo{
-  padding:1.25rem 1.1rem .9rem;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;
-}
-.nav-logo a{text-decoration:none}
-.nav-logo-name{
-  font-family:'IBM Plex Mono',monospace;font-size:.9rem;font-weight:600;
-  color:var(--accent);letter-spacing:-.02em;
-}
-.nav-logo-sub{font-size:.62rem;color:var(--text-dim);letter-spacing:.08em;text-transform:uppercase;margin-top:2px}
-
-.theme-toggle{
-  background:none;border:1px solid var(--border2);color:var(--text-dim);
-  border-radius:6px;width:28px;height:28px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;font-size:.85rem;
-  flex-shrink:0;margin-top:1px;transition:border-color .15s,color .15s;
-}
-.theme-toggle:hover{border-color:var(--accent);color:var(--accent)}
-
-/* Collapsible nav groups */
-.nav-group{margin-bottom:.1rem}
-.nav-group-label{
-  font-size:.61rem;letter-spacing:.11em;text-transform:uppercase;
-  color:var(--text-dim);padding:.6rem 1.1rem .25rem;font-weight:500;
-  display:flex;align-items:center;justify-content:space-between;
-  cursor:pointer;user-select:none;transition:color .15s;
-}
-.nav-group-label:hover{color:var(--text)}
-.nav-caret{font-size:.65rem;transition:transform .2s;opacity:.6}
-.nav-group.collapsed .nav-caret{transform:rotate(-90deg)}
-.nav-group-links{
-  overflow:hidden;max-height:600px;transition:max-height .25s ease;
-  padding:0 .45rem;
-}
-.nav-group.collapsed .nav-group-links{max-height:0}
-nav a{
-  display:block;padding:.27rem .75rem;color:var(--text-dim);
-  text-decoration:none;font-size:.8rem;border-radius:5px;
-  transition:color .15s,background .15s;
-}
-nav a:hover{color:var(--text-bright);background:var(--bg3)}
-nav a.active{color:var(--accent);background:var(--accent-dim)}
-nav a.fn-link{
-  color:var(--fn-color);opacity:.75;
-  font-family:'IBM Plex Mono',monospace;font-size:.73rem;
-}
-nav a.fn-link:hover{opacity:1;background:var(--badge-fn-bg)}
-
-.nav-footer{
-  margin-top:1rem;padding:1rem 1.1rem .5rem;
-  border-top:1px solid var(--border);
-  display:flex;flex-direction:column;gap:.5rem;
-}
-.bmc-btn{
-  display:flex;align-items:center;justify-content:center;gap:.45rem;
-  background:#ffdd00;color:#000;font-family:'DM Sans',sans-serif;
-  font-size:.75rem;font-weight:500;padding:.45rem .75rem;
-  border-radius:6px;text-decoration:none;transition:opacity .15s;
-  border:none;cursor:pointer;
-}
-.bmc-btn:hover{opacity:.88}
-.bmc-btn svg{width:14px;height:14px;flex-shrink:0}
-.nav-gh{
-  display:flex;align-items:center;gap:.4rem;
-  font-size:.75rem;color:var(--text-dim);text-decoration:none;
-  padding:.3rem .75rem;border-radius:5px;transition:color .15s,background .15s;
-}
-.nav-gh:hover{color:var(--text-bright);background:var(--bg3)}
-.nav-gh svg{width:14px;height:14px;flex-shrink:0}
-
-/* ═══════════════════════════════════════ HERO ═══ */
-.hero{
-  padding:4.5rem 0 3rem;border-bottom:1px solid var(--border);margin-bottom:3.5rem;
-  position:relative;
-}
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:var(--hero-glow);pointer-events:none;
-}
-.hero-tag{
-  font-family:'IBM Plex Mono',monospace;font-size:.7rem;color:var(--accent);
-  letter-spacing:.15em;text-transform:uppercase;margin-bottom:1.1rem;
-  display:flex;align-items:center;gap:.5rem;
-}
-.hero-tag::before{content:'';display:block;width:22px;height:1px;background:var(--accent)}
-.hero h1{
-  font-family:'Instrument Serif',serif;font-size:clamp(2.1rem,4.5vw,3.4rem);
-  color:var(--text-bright);line-height:1.1;font-weight:400;margin-bottom:1rem;
-}
-.hero h1 em{color:var(--accent);font-style:italic}
-.hero-lead{font-size:.97rem;color:var(--text);max-width:560px;line-height:1.75;margin-bottom:1.75rem}
-.hero-code{
-  display:inline-flex;align-items:center;gap:1rem;
-  background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
-  padding:.65rem 1.15rem;font-family:'IBM Plex Mono',monospace;font-size:.82rem;
-  color:var(--text-bright);
-}
-.hero-code .kw{color:var(--kw-color)}.hero-code .fn{color:var(--fn-color)}
-.hero-code .cm{color:var(--cm-color)}
-
-/* ═══════════════════════════════════════ SECTIONS ═══ */
-section{margin-bottom:3.5rem}
-section>h2{
-  font-family:'Instrument Serif',serif;font-size:1.7rem;
-  color:var(--text-bright);font-weight:400;margin-bottom:.4rem;padding-top:.25rem;
-}
-.section-lead{
-  color:var(--text-dim);font-size:.87rem;margin-bottom:1.6rem;
-  border-bottom:1px solid var(--border);padding-bottom:.8rem;
-}
-.anchor-target{scroll-margin-top:1.5rem}
-
-/* ═══════════════════════════════════════ ORIGIN BANNER ═══ */
-.origin-card{
-  background:var(--bg2);border:1px solid var(--border);
-  border-left:3px solid var(--accent);border-radius:8px;
-  padding:1.2rem 1.4rem;font-size:.88rem;color:var(--text);
-  line-height:1.75;margin-bottom:1.5rem;
-}
-.origin-card p+p{margin-top:.6rem}
-.origin-card strong{color:var(--text-bright)}
-.origin-card a{color:var(--accent);text-underline-offset:3px}
-
-/* ═══════════════════════════════════════ ALERT STYLES ═══ */
-.alert{
-  display:flex;gap:.75rem;border-radius:7px;
-  padding:.8rem 1.1rem;font-size:.83rem;line-height:1.65;margin-bottom:1.2rem;
-}
-.alert-warn{
-  background:var(--warn-dim);border:1px solid rgba(240,192,90,.25);color:var(--warn-text);
-}
-.alert-warn::before{content:'⚠';flex-shrink:0}
-.alert-info{
-  background:var(--accent-dim);border:1px solid rgba(90,240,168,.2);color:var(--accent);
-}
-.alert-info::before{content:'ℹ';flex-shrink:0}
-.alert-danger{
-  background:#200a10;border:1px solid rgba(240,90,122,.2);color:#f07090;
-}
-.alert-danger::before{content:'⛔';flex-shrink:0}
-.alert code{font-family:'IBM Plex Mono',monospace;font-size:.85em}
-
-/* ═══════════════════════════════════════ FUNCTION CARDS ═══ */
-.fn-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  margin-bottom:1.1rem;overflow:hidden;transition:border-color .2s;
-}
-.fn-card:target{border-color:var(--fn-color);box-shadow:0 0 0 3px var(--badge-fn-bg)}
-.fn-header{
-  padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);
-  display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;
-}
-.fn-sig{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;color:var(--text-bright);word-break:break-all}
-.fn-sig .fn-name{color:var(--fn-color)}
-.fn-sig .fn-param{color:var(--str-color);font-style:italic;font-weight:400}
-.fn-sig .fn-paren{color:var(--text-dim)}
-.fn-sig .fn-opt{color:var(--warn);font-weight:400;font-size:.8em}
-.fn-badge{
-  font-size:.63rem;letter-spacing:.07em;text-transform:uppercase;
-  padding:.18rem .55rem;border-radius:100px;white-space:nowrap;margin-top:2px;
-}
-.badge-bool{background:#1a3a5a;color:#3dd4e8;border:1px solid #2a5a80}
-.badge-str{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(90,240,168,.25)}
-.badge-num{background:var(--warn-dim);color:var(--warn);border:1px solid rgba(240,192,90,.2)}
-.badge-void{background:var(--bg3);color:var(--text-dim);border:1px solid var(--border2)}
-.fn-body{padding:1.3rem 1.4rem}
-.fn-desc{color:var(--text);font-size:.88rem;line-height:1.75;margin-bottom:1.1rem}
-.fn-desc code{
-  font-family:'IBM Plex Mono',monospace;font-size:.85em;
-  color:var(--accent);background:var(--accent-dim);
-  padding:.1em .4em;border-radius:3px;
-}
-
-/* ═══════════════════════════════════════ PARAMS TABLE ═══ */
-.params-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:1.1rem}
-.params-table th{
-  text-align:left;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-dim);padding:.45rem .7rem;border-bottom:1px solid var(--border);
-  font-weight:500;
-}
-.params-table td{padding:.55rem .7rem;vertical-align:top;border-bottom:1px solid var(--border);color:var(--text)}
-.params-table td:first-child{font-family:'IBM Plex Mono',monospace;color:var(--str-color);font-size:.78rem;white-space:nowrap;width:120px}
-.params-table td:nth-child(2){color:var(--warn);font-family:'IBM Plex Mono',monospace;font-size:.75rem;width:75px}
-.params-table tr:last-child td{border-bottom:none}
-
-/* ═══════════════════════════════════════ CODE BLOCKS ═══ */
-.code-block{
-  background:var(--code-bg);border:1px solid var(--border);
-  border-radius:8px;overflow:hidden;font-size:.8rem;margin-bottom:1.1rem;
-}
-.code-header{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:.45rem .95rem;background:var(--bg3);border-bottom:1px solid var(--border);
-  font-size:.68rem;color:var(--text-dim);font-family:'IBM Plex Mono',monospace;
-}
-.code-block pre{
-  padding:1.15rem 1.4rem;overflow-x:auto;
-  font-family:'IBM Plex Mono',monospace;line-height:1.7;color:var(--text);
-}
-/* syntax highlights */
-.code-block pre .kw{color:var(--kw-color)}
-.code-block pre .fn{color:var(--fn-color)}
-.code-block pre .str{color:var(--str-color)}
-.code-block pre .num{color:var(--num-color)}
-.code-block pre .cm{color:var(--cm-color);font-style:italic}
-.code-block pre .ret{color:var(--warn)}
-
-.copy-btn{
-  background:none;border:1px solid var(--border2);color:var(--text-dim);
-  padding:.13rem .55rem;border-radius:4px;cursor:pointer;
-  font-size:.63rem;font-family:'IBM Plex Mono',monospace;letter-spacing:.05em;
-  transition:border-color .15s,color .15s;
-}
-.copy-btn:hover{border-color:var(--accent);color:var(--accent)}
-.copy-btn.copied{border-color:var(--accent);color:var(--accent)}
-
-/* ═══════════════════════════════════════ RETURN VALUE GRID ═══ */
-.ret-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
-.ret-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:1.1rem 1.2rem;
-}
-.ret-card-name{font-family:'IBM Plex Mono',monospace;font-size:.88rem;font-weight:600;color:var(--warn);margin-bottom:.4rem}
-.ret-card-desc{font-size:.84rem;color:var(--text);line-height:1.65}
-.ret-card-ex{
-  font-family:'IBM Plex Mono',monospace;font-size:.73rem;color:var(--str-color);
-  background:var(--code-bg);border-radius:5px;padding:.45rem .7rem;margin-top:.65rem;
-  word-break:break-all;
-}
-
-/* ═══════════════════════════════════════ EXAMPLE CARDS ═══ */
-.example-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;margin-bottom:1.75rem;overflow:hidden}
-.example-header{padding:1.1rem 1.4rem;border-bottom:1px solid var(--border);background:var(--bg3)}
-.example-header h3{font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:400;color:var(--text-bright);margin-bottom:.2rem}
-.example-header p{font-size:.8rem;color:var(--text-dim)}
-.example-body .code-block{margin:0;border:none;border-radius:0}
-.example-body .code-header{background:var(--bg2)}
-
-/* ═══════════════════════════════════════ BEST PRACTICES / INFO CARDS ═══ */
-.bp-list{list-style:none;display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
-.bp-list li{
-  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
-  padding:.85rem 1.1rem;font-size:.87rem;color:var(--text);line-height:1.65;
-  display:flex;gap:.75rem;align-items:flex-start;
-}
-.bp-list li .bp-icon{flex-shrink:0;font-size:.95rem;margin-top:.05rem}
-.bp-list li code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
-.bp-list li strong{color:var(--text-bright)}
-
-/* ═══════════════════════════════════════ TROUBLESHOOT TABLE ═══ */
-.trouble-table{width:100%;border-collapse:collapse;font-size:.84rem;margin-bottom:1.25rem}
-.trouble-table th{
-  text-align:left;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--text-dim);padding:.5rem .85rem;border-bottom:1px solid var(--border);font-weight:500;
-}
-.trouble-table td{
-  padding:.65rem .85rem;vertical-align:top;border-bottom:1px solid var(--border);color:var(--text);
-  font-size:.83rem;line-height:1.6;
-}
-.trouble-table td:first-child{
-  color:var(--err);font-family:'IBM Plex Mono',monospace;font-size:.78rem;
-  white-space:nowrap;vertical-align:top;padding-top:.7rem;
-}
-.trouble-table tr:last-child td{border-bottom:none}
-.trouble-table code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
-
-/* ═══════════════════════════════════════ PERF BADGES ═══ */
-.perf-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;margin-bottom:1.25rem}
-.perf-card{
-  background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;
-}
-.perf-card-name{font-family:'IBM Plex Mono',monospace;font-size:.8rem;font-weight:600;color:var(--fn-color);margin-bottom:.3rem}
-.perf-card-cost{font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.4rem}
-.perf-cost-high{color:var(--err)}.perf-cost-med{color:var(--warn)}.perf-cost-low{color:var(--accent)}
-.perf-card-desc{font-size:.79rem;color:var(--text-dim);line-height:1.55}
-
-/* ═══════════════════════════════════════ AD SLOT ═══ */
-.ad-slot{
-  background:var(--bg2);border:1px dashed var(--border2);border-radius:8px;
-  padding:.9rem 1.1rem;text-align:center;font-size:.75rem;color:var(--text-dim);
-  margin-bottom:2rem;min-height:60px;display:flex;align-items:center;justify-content:center;
-}
-
-/* ═══════════════════════════════════════ WPAD STEPS ═══ */
-.steps{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
-.step{
-  display:flex;gap:1rem;align-items:flex-start;
-  background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;
-}
-.step-num{
-  background:var(--accent);color:#0a1a10;border-radius:50%;
-  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
-  font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:.1rem;font-family:'IBM Plex Mono',monospace;
-}
-.step-body{font-size:.86rem;color:var(--text);line-height:1.65}
-.step-body strong{color:var(--text-bright)}
-.step-body code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
-
-/* ═══════════════════════════════════════ TESTER ═══ */
-.tester-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
-.tester-header{padding:1.3rem 1.4rem;border-bottom:1px solid var(--border);background:var(--bg3)}
-.tester-header h3{font-family:'Instrument Serif',serif;font-size:1.1rem;font-weight:400;color:var(--text-bright);margin-bottom:.2rem}
-.tester-header p{font-size:.8rem;color:var(--text-dim)}
-.tester-body{padding:1.4rem;display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
-.tester-col label{display:block;font-size:.63rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text);margin-bottom:.45rem}
-.tester-col textarea,.tester-col input{
-  width:100%;background:var(--code-bg);border:1px solid var(--border2);border-radius:7px;
-  color:var(--text-bright);font-family:'IBM Plex Mono',monospace;font-size:.78rem;
-  padding:.7rem .95rem;outline:none;line-height:1.65;transition:border-color .15s;
-}
-.tester-col textarea{min-height:260px;resize:vertical}
-.tester-col textarea:focus,.tester-col input:focus{border-color:var(--accent)}
-.tester-col input{margin-bottom:.65rem}
-.tester-run{
-  width:100%;background:var(--accent);color:#0a1a10;border:none;
-  padding:.7rem;border-radius:7px;font-family:'IBM Plex Mono',monospace;
-  font-size:.82rem;font-weight:600;cursor:pointer;letter-spacing:.05em;
-  transition:opacity .15s,transform .1s;
-}
-.tester-run:hover{opacity:.9}
-.tester-run:active{transform:scale(.98)}
-.tester-result{
-  margin-top:.65rem;background:var(--code-bg);border:1px solid var(--border2);
-  border-radius:7px;padding:.7rem .95rem;font-family:'IBM Plex Mono',monospace;
-  font-size:.8rem;min-height:56px;color:var(--text-dim);white-space:pre-wrap;word-break:break-all;
-}
-.tester-result.ok{color:var(--accent);border-color:rgba(90,240,168,.3)}
-.tester-result.err{color:var(--err);border-color:rgba(240,90,122,.25);background:#0f080d}
-
-/* ═══════════════════════════════════════ INLINE UTILS ═══ */
-.icode{font-family:'IBM Plex Mono',monospace;font-size:.84em;color:var(--accent);background:var(--accent-dim);padding:.1em .4em;border-radius:3px}
-.mt{margin-top:1rem}
-footer{border-top:1px solid var(--border);padding:1.75rem 0 0;margin-top:3rem;font-size:.77rem;color:var(--text-dim)}
-footer a{color:var(--text-dim);text-underline-offset:3px}
-footer a:hover{color:var(--accent)}
-
-/* ═══════════════════════════════════════ RESPONSIVE ═══ */
-@media(max-width:860px){
-  nav{display:none}
-  .tester-body{grid-template-columns:1fr}
-  .ret-grid{grid-template-columns:1fr}
-  .perf-grid{grid-template-columns:1fr 1fr}
-}
-@media(max-width:480px){
-  .perf-grid{grid-template-columns:1fr}
-  .hero{padding:2.5rem 0 2rem}
-}
-</style>
+<!-- Theme detection — inline script with nonce, runs before first paint to
+     prevent a flash of the wrong colour scheme.
+     updateToggleIcon() is intentionally NOT called here; it is defined in
+     client.js and will sync the icon when that file loads. -->
+<script nonce="{{NONCE}}">
+(function(){
+  var t = localStorage.getItem('pac-theme') ||
+          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
 </head>
 <body>
 <div class="site-wrapper">
@@ -471,11 +44,13 @@ footer a:hover{color:var(--accent)}
       <div class="nav-logo-name">pac explained</div>
       <div class="nav-logo-sub">PAC File Reference</div>
     </a>
-    <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme" aria-label="Toggle theme">☀</button>
+    <!-- onclick removed — wired in client.js via addEventListener -->
+    <button class="theme-toggle" title="Toggle theme" aria-label="Toggle theme">☀</button>
   </div>
 
   <div class="nav-group" id="ng-overview">
-    <div class="nav-group-label" onclick="toggleGroup('ng-overview')">Overview<span class="nav-caret">▾</span></div>
+    <!-- onclick removed — nav collapse handled by event delegation in client.js -->
+    <div class="nav-group-label">Overview<span class="nav-caret">▾</span></div>
     <div class="nav-group-links">
       <a href="#about">About this site</a>
       <a href="#intro">What is a PAC file?</a>
@@ -486,7 +61,7 @@ footer a:hover{color:var(--accent)}
   </div>
 
   <div class="nav-group" id="ng-functions">
-    <div class="nav-group-label" onclick="toggleGroup('ng-functions')">Function reference<span class="nav-caret">▾</span></div>
+    <div class="nav-group-label">Function reference<span class="nav-caret">▾</span></div>
     <div class="nav-group-links">
       <a href="#isPlainHostName" class="fn-link">isPlainHostName()</a>
       <a href="#dnsDomainIs" class="fn-link">dnsDomainIs()</a>
@@ -505,7 +80,7 @@ footer a:hover{color:var(--accent)}
   </div>
 
   <div class="nav-group" id="ng-advanced">
-    <div class="nav-group-label" onclick="toggleGroup('ng-advanced')">Advanced<span class="nav-caret">▾</span></div>
+    <div class="nav-group-label">Advanced<span class="nav-caret">▾</span></div>
     <div class="nav-group-links">
       <a href="#perf">Compute-intensive functions</a>
       <a href="#special">Special use cases</a>
@@ -513,7 +88,7 @@ footer a:hover{color:var(--accent)}
   </div>
 
   <div class="nav-group" id="ng-guides">
-    <div class="nav-group-label" onclick="toggleGroup('ng-guides')">Guides<span class="nav-caret">▾</span></div>
+    <div class="nav-group-label">Guides<span class="nav-caret">▾</span></div>
     <div class="nav-group-links">
       <a href="#best-practices">Best practices</a>
       <a href="#security">Security</a>
@@ -522,7 +97,7 @@ footer a:hover{color:var(--accent)}
   </div>
 
   <div class="nav-group" id="ng-devtools">
-    <div class="nav-group-label" onclick="toggleGroup('ng-devtools')">Dev tools<span class="nav-caret">▾</span></div>
+    <div class="nav-group-label">Dev tools<span class="nav-caret">▾</span></div>
     <div class="nav-group-links">
       <a href="#testing">Testing &amp; debugging</a>
       <a href="#troubleshooting">Troubleshooting</a>
@@ -530,7 +105,7 @@ footer a:hover{color:var(--accent)}
   </div>
 
   <div class="nav-group" id="ng-ref">
-    <div class="nav-group-label" onclick="toggleGroup('ng-ref')">Examples<span class="nav-caret">▾</span></div>
+    <div class="nav-group-label">Examples<span class="nav-caret">▾</span></div>
     <div class="nav-group-links">
       <a href="#examples">Common examples</a>
       <a href="#live-tester">Live tester</a>
@@ -553,13 +128,6 @@ footer a:hover{color:var(--accent)}
 <div class="content-area">
 <main id="top">
 
-<!-- AD SLOT (top) — replace with your Carbon Ads or AdSense code -->
-<!-- Carbon Ads example:
-<div class="ad-slot" id="carbon-slot">
-  <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=YOUR_CODE&placement=pacexplainedcom" id="_carbonads_js"></script>
-</div>
--->
-
 <!-- ── HERO ── -->
 <div class="hero">
   <div class="hero-tag">Proxy Auto-Configuration</div>
@@ -568,8 +136,9 @@ footer a:hover{color:var(--accent)}
     Every function, return value, best practices, security guide, WPAD, testing tools,
     and a live in-browser tester — all in one place.
   </p>
+  <!-- color-str replaces style="color:var(--str-color)" -->
   <div class="hero-code">
-    <span><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span style="color:var(--str-color)">url</span>, <span style="color:var(--str-color)">host</span>) {</span>
+    <span><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="color-str">url</span>, <span class="color-str">host</span>) {</span>
     <span class="cm">// ← you write this</span>
   </div>
 </div>
@@ -636,7 +205,7 @@ footer a:hover{color:var(--accent)}
   <p class="section-lead">A solid production template to build from.</p>
 
   <div class="code-block">
-    <div class="code-header"><span>proxy.pac — production template</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <div class="code-header"><span>proxy.pac — production template</span><button class="copy-btn">copy</button></div>
     <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
 
   <span class="cm">// 1. Bypass proxy for plain (unqualified) hostnames</span>
@@ -708,7 +277,7 @@ footer a:hover{color:var(--accent)}
   </p>
 
   <div class="code-block">
-    <div class="code-header"><span>fallback chain — evaluated left → right</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <div class="code-header"><span>fallback chain — evaluated left → right</span><button class="copy-btn">copy</button></div>
     <pre><span class="kw">return</span> <span class="str">"PROXY primary.corp.com:8080; PROXY backup.corp.com:8080; DIRECT"</span>;
 <span class="cm">//      ↑ tried first          ↑ tried if primary fails  ↑ last resort</span></pre>
   </div>
@@ -739,7 +308,7 @@ footer a:hover{color:var(--accent)}
         <tr><td>host</td><td>string</td><td>The hostname portion of the URL (no port).</td></tr>
       </table>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">isPlainHostName</span>(<span class="str">"www"</span>)            <span class="cm">// true  — no dots</span>
 <span class="fn">isPlainHostName</span>(<span class="str">"www.google.com"</span>) <span class="cm">// false — has dots</span>
 
@@ -764,7 +333,7 @@ footer a:hover{color:var(--accent)}
         <tr><td>domain</td><td>string</td><td>Domain to match — must start with a dot, e.g. <code>".example.com"</code>.</td></tr>
       </table>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">dnsDomainIs</span>(<span class="str">"www.mozilla.org"</span>, <span class="str">".mozilla.org"</span>)  <span class="cm">// true</span>
 <span class="fn">dnsDomainIs</span>(<span class="str">"mozilla.org"</span>,     <span class="str">".mozilla.org"</span>)  <span class="cm">// false — no subdomain!</span>
 <span class="fn">dnsDomainIs</span>(<span class="str">"www.google.com"</span>,  <span class="str">".mozilla.org"</span>)  <span class="cm">// false</span>
@@ -786,7 +355,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Returns <code>true</code> if <code>host</code> matches <code>hostdom</code> exactly, <em>or</em> if host is the short (unqualified) version of <code>hostdom</code>. This lets you match both <code>www</code> and <code>www.example.com</code> in a single call.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">localHostOrDomainIs</span>(<span class="str">"www.mozilla.org"</span>, <span class="str">"www.mozilla.org"</span>) <span class="cm">// true</span>
 <span class="fn">localHostOrDomainIs</span>(<span class="str">"www"</span>,             <span class="str">"www.mozilla.org"</span>) <span class="cm">// true  (short name)</span>
 <span class="fn">localHostOrDomainIs</span>(<span class="str">"www.google.com"</span>,  <span class="str">"www.mozilla.org"</span>) <span class="cm">// false</span></pre>
@@ -804,7 +373,7 @@ footer a:hover{color:var(--accent)}
       <p class="fn-desc">Performs a live DNS lookup for <code>host</code>. Returns <code>true</code> if the hostname resolves, <code>false</code> if not. <strong>Triggers a real DNS query</strong> — adds latency to every PAC evaluation. Prefer <code>dnsDomainIs()</code> or <code>shExpMatch()</code> where possible.</p>
       <div class="alert alert-warn">DNS queries block the browser during PAC evaluation. See the <a href="#perf">Compute-intensive functions</a> section for strategies to minimise DNS calls.</div>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="cm">// Go direct if hostname resolves in internal DNS</span>
 <span class="kw">if</span> (<span class="fn">isResolvable</span>(host)) {
   <span class="kw">return</span> <span class="str">"DIRECT"</span>;
@@ -830,7 +399,7 @@ footer a:hover{color:var(--accent)}
         <tr><td>mask</td><td>string</td><td>Subnet mask, e.g. <code>"255.255.0.0"</code>.</td></tr>
       </table>
       <div class="code-block">
-        <div class="code-header"><span>example — resolve once, test multiple subnets</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example — resolve once, test multiple subnets</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host); <span class="cm">// resolve once</span>
 <span class="kw">if</span> (ip &amp;&amp; (
      <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
@@ -851,7 +420,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Resolves a hostname to its IP address. Returns a dotted-decimal string (e.g. <code>"93.184.216.34"</code>), or an empty string <code>""</code> on failure. Always store the result in a variable and reuse it — calling <code>dnsResolve()</code> multiple times for the same host triggers multiple DNS queries.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);     <span class="cm">// one DNS call — store and reuse</span>
 <span class="kw">if</span> (!ip) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; } <span class="cm">// guard against resolution failure</span>
 
@@ -871,7 +440,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Returns the IP address of the <em>client machine</em> as a dotted-decimal string. Useful for routing decisions based on the client's subnet — for example, picking a regionally appropriate proxy. In some environments this returns <code>"127.0.0.1"</code> — see <a href="#troubleshooting">Troubleshooting</a>.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="cm">// Select a regional proxy based on the client's subnet</span>
 <span class="kw">var</span> myip = <span class="fn">myIpAddress</span>();
 
@@ -895,7 +464,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Returns the number of dots in the hostname. <code>"intranet"</code> → 0, <code>"mozilla.org"</code> → 1, <code>"www.mozilla.org"</code> → 2. A DNS-free alternative to <code>isPlainHostName()</code> that also works for multi-level internal domains.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">dnsDomainLevels</span>(<span class="str">"www"</span>)             <span class="cm">// 0</span>
 <span class="fn">dnsDomainLevels</span>(<span class="str">"mozilla.org"</span>)     <span class="cm">// 1</span>
 <span class="fn">dnsDomainLevels</span>(<span class="str">"www.mozilla.org"</span>) <span class="cm">// 2</span>
@@ -916,7 +485,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Matches <code>str</code> against a shell glob pattern. <code>*</code> matches any sequence of characters, <code>?</code> matches any single character. This is <em>not</em> a regular expression. Can be applied to both <code>host</code> and the full <code>url</code> — no DNS lookup is triggered.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">shExpMatch</span>(<span class="str">"www.google.com"</span>,  <span class="str">"*.google.*"</span>)         <span class="cm">// true</span>
 <span class="fn">shExpMatch</span>(<span class="str">"www.bing.com"</span>,    <span class="str">"*.google.*"</span>)         <span class="cm">// false</span>
 <span class="fn">shExpMatch</span>(<span class="str">"ftp://example.com/pub"</span>, <span class="str">"ftp:*"</span>)       <span class="cm">// true</span>
@@ -938,7 +507,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Returns <code>true</code> if the current day falls within the specified range. Valid values: <code>"SUN"</code> <code>"MON"</code> <code>"TUE"</code> <code>"WED"</code> <code>"THU"</code> <code>"FRI"</code> <code>"SAT"</code>. Ranges wrap around — <code>weekdayRange("FRI","MON")</code> matches Fri, Sat, Sun, Mon. Append <code>"GMT"</code> to use UTC.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">if</span> (   <span class="fn">weekdayRange</span>(<span class="str">"MON"</span>, <span class="str">"FRI"</span>)
     &amp;&amp; <span class="fn">timeRange</span>(<span class="num">8</span>, <span class="num">18</span>)) {
   <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>; <span class="cm">// business hours</span>
@@ -957,7 +526,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Returns <code>true</code> if the current date falls within the given range. Month names: <code>"JAN"</code>–<code>"DEC"</code>. Day numbers: 1–31. Years: four-digit. Arguments can be mixed and matched — you can specify just months, just years, or full date ranges. Append <code>"GMT"</code> for UTC.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">dateRange</span>(<span class="str">"JAN"</span>, <span class="str">"MAR"</span>)                       <span class="cm">// true in Q1</span>
 <span class="fn">dateRange</span>(<span class="num">1</span>, <span class="str">"JAN"</span>, <span class="num">2025</span>, <span class="num">31</span>, <span class="str">"DEC"</span>, <span class="num">2025</span>) <span class="cm">// true all of 2025</span>
 <span class="fn">dateRange</span>(<span class="num">1</span>, <span class="num">15</span>)                              <span class="cm">// true on days 1–15 of any month</span></pre>
@@ -974,7 +543,7 @@ footer a:hover{color:var(--accent)}
     <div class="fn-body">
       <p class="fn-desc">Returns <code>true</code> if the current time falls within the given range. Hours use 24-hour format (0–23). Specify just hours, hours+minutes, or full hours+minutes+seconds. Append <code>"GMT"</code> for UTC evaluation.</p>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">timeRange</span>(<span class="num">9</span>, <span class="num">17</span>)         <span class="cm">// true between 09:00 and 17:00</span>
 <span class="fn">timeRange</span>(<span class="num">9</span>, <span class="num">30</span>, <span class="num">17</span>, <span class="num">0</span>)  <span class="cm">// true between 09:30 and 17:00</span>
 <span class="fn">timeRange</span>(<span class="num">12</span>)            <span class="cm">// true during 12:00:00–12:59:59</span></pre>
@@ -992,7 +561,7 @@ footer a:hover{color:var(--accent)}
       <p class="fn-desc">Outputs a debug message during PAC evaluation. In Firefox it appears in the browser console. <strong>Not available in all environments</strong> — in some browsers, calling <code>alert()</code> silently breaks PAC evaluation entirely.</p>
       <div class="alert alert-danger">Never ship <code>alert()</code> calls in a production PAC file. Remove all debug calls before deploying.</div>
       <div class="code-block">
-        <div class="code-header"><span>example</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
         <pre><span class="fn">alert</span>(<span class="str">"PAC: evaluating host = "</span> + host);
 <span class="fn">alert</span>(<span class="fn">isInNet</span>(<span class="fn">dnsResolve</span>(host), <span class="str">"10.0.0.0"</span>, <span class="str">"255.0.0.0"</span>));</pre>
       </div>
@@ -1047,7 +616,7 @@ footer a:hover{color:var(--accent)}
   <p class="fn-desc">The golden rule:</p>
 
   <div class="code-block">
-    <div class="code-header"><span>DNS optimisation pattern</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+    <div class="code-header"><span>DNS optimisation pattern</span><button class="copy-btn">copy</button></div>
     <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
 
   <span class="cm">// ✓ FAST: domain checks first — zero DNS cost</span>
@@ -1087,7 +656,7 @@ footer a:hover{color:var(--accent)}
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
 
@@ -1096,10 +665,8 @@ footer a:hover{color:var(--accent)}
   <span class="kw">var</span> lastOctet = <span class="fn">parseInt</span>(parts[<span class="num">3</span>], <span class="num">10</span>);
 
   <span class="kw">if</span> ((lastOctet % <span class="num">2</span>) === <span class="num">0</span>) {
-    <span class="cm">// EVEN → primary is proxy-a, fallback to proxy-b</span>
     <span class="kw">return</span> <span class="str">"PROXY proxy-a.corp.com:8080; PROXY proxy-b.corp.com:8080"</span>;
   } <span class="kw">else</span> {
-    <span class="cm">// ODD  → primary is proxy-b, fallback to proxy-a</span>
     <span class="kw">return</span> <span class="str">"PROXY proxy-b.corp.com:8080; PROXY proxy-a.corp.com:8080"</span>;
   }
 }</pre>
@@ -1114,7 +681,7 @@ footer a:hover{color:var(--accent)}
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
 
@@ -1142,7 +709,7 @@ footer a:hover{color:var(--accent)}
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
 
@@ -1170,7 +737,7 @@ footer a:hover{color:var(--accent)}
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
 
   <span class="cm">// Route API traffic to a dedicated high-bandwidth proxy</span>
@@ -1274,15 +841,12 @@ footer a:hover{color:var(--accent)}
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>bash — install and use pacparser</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>bash — install and use pacparser</span><button class="copy-btn">copy</button></div>
         <pre><span class="cm"># Install (macOS)</span>
 brew install pacparser
 
 <span class="cm"># Install (Ubuntu / Debian)</span>
 sudo apt install pacparser
-
-<span class="cm"># Install from source (all platforms)</span>
-<span class="cm"># https://github.com/manugarg/pacparser</span>
 
 <span class="cm"># Test a PAC file against a URL</span>
 pactester -p proxy.pac -u https://www.google.com -h www.google.com
@@ -1303,25 +867,22 @@ pactester -p proxy.pac -f urls.txt</pre>
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>firefox about:config + console</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>firefox about:config + console</span><button class="copy-btn">copy</button></div>
         <pre><span class="cm"># 1. Open about:config → set network.proxy.autoconfig_url to your PAC file URL</span>
 <span class="cm"># 2. Set network.proxy.type = 2 (use PAC file)</span>
 <span class="cm"># 3. Open DevTools → Browser Console (not page console)</span>
 <span class="cm"># 4. alert() calls in your PAC file appear as "PAC-alert: ..." messages</span>
-<span class="cm"># 5. Navigate to a URL and watch the console for evaluation output</span>
-
-<span class="cm"># Useful PAC debug snippet — add temporarily to your PAC file:</span></pre>
+<span class="cm"># 5. Navigate to a URL and watch the console for evaluation output</span></pre>
       </div>
       <div class="code-block">
-        <div class="code-header"><span>PAC debug snippet (remove before deploying)</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>PAC debug snippet (remove before deploying)</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">var</span> result = <span class="fn">_findProxy</span>(url, host);
-  <span class="fn">alert</span>(<span class="str">"PAC: "</span> + host + <span class="str">" → "</span> + result); <span class="cm">// shows in Firefox console</span>
+  <span class="fn">alert</span>(<span class="str">"PAC: "</span> + host + <span class="str">" → "</span> + result);
   <span class="kw">return</span> result;
 }
 
 <span class="kw">function</span> <span class="fn">_findProxy</span>(<span class="str">url</span>, <span class="str">host</span>) {
-  <span class="cm">// your real logic here</span>
   <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
   <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
 }</pre>
@@ -1336,7 +897,7 @@ pactester -p proxy.pac -f urls.txt</pre>
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>chrome netlog</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>chrome netlog</span><button class="copy-btn">copy</button></div>
         <pre><span class="cm"># Open chrome://net-export/ → Start Logging → browse → Stop</span>
 <span class="cm"># Open https://netlog-viewer.appspot.com/ → load the exported JSON</span>
 <span class="cm"># Filter events by "PAC_RESOLVE" to see per-request PAC results</span>
@@ -1347,7 +908,8 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
     </div>
   </div>
 
-  <p class="fn-desc mt">Also try the <a href="#live-tester" style="color:var(--accent)">Live Tester</a> on this page for quick in-browser validation. It simulates all PAC helper functions and evaluates your PAC file client-side — no data is sent anywhere.</p>
+  <!-- color-accent replaces style="color:var(--accent)" -->
+  <p class="fn-desc mt">Also try the <a href="#live-tester" class="color-accent">Live Tester</a> on this page for quick in-browser validation. It simulates all PAC helper functions and evaluates your PAC file client-side — no data is sent anywhere.</p>
 </section>
 
 <!-- ══════════════════════ TROUBLESHOOTING ══════════════════════ -->
@@ -1406,7 +968,7 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
 
   <span class="cm">// Fast checks first — no DNS cost</span>
@@ -1440,7 +1002,7 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"http:*"</span>))  { <span class="kw">return</span> <span class="str">"PROXY http-proxy.corp.com:8080"</span>; }
   <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"https:*"</span>)) { <span class="kw">return</span> <span class="str">"PROXY ssl-proxy.corp.com:8443"</span>;  }
@@ -1458,7 +1020,7 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
 
@@ -1479,7 +1041,7 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
     </div>
     <div class="example-body">
       <div class="code-block">
-        <div class="code-header"><span>proxy.pac</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div>
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
         <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
   <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
   <span class="kw">return</span> <span class="str">"SOCKS5 socks.corp.com:1080; PROXY proxy.corp.com:8080; DIRECT"</span>;
@@ -1525,24 +1087,15 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
         <input type="text" id="test-url" value="https://www.google.com" placeholder="https://example.com">
         <label>Host override (optional)</label>
         <input type="text" id="test-host" placeholder="Leave blank to extract from URL">
-        <button class="tester-run" onclick="runPAC()">▶  Run PAC</button>
-        <label style="margin-top:.65rem">Result</label>
+        <!-- onclick removed — wired in client.js via addEventListener -->
+        <button class="tester-run">▶  Run PAC</button>
+        <!-- mt-label replaces style="margin-top:.65rem" -->
+        <label class="mt-label">Result</label>
         <div class="tester-result" id="pac-result">Click "Run PAC" to evaluate…</div>
       </div>
     </div>
   </div>
 </section>
-
-<!-- ── AD SLOT (bottom) ── -->
-<!--
-  MONETISATION OPTIONS:
-  1. Carbon Ads (best for dev audiences — apply at carbonads.com)
-     <script async type="text/javascript" src="//cdn.carbonads.com/carbon.js?serve=YOUR_CODE&placement=pacexplainedcom" id="_carbonads_js"></script>
-  2. Google AdSense (replace ca-pub-XXXXXX with your publisher ID after approval)
-     <ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXX" data-ad-slot="XXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>
-     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
-  3. EthicalAds (ethical-ads.io) — privacy-first, good for open-source/dev tools
--->
 
 <footer>
   <p>
@@ -1562,203 +1115,11 @@ scutil --proxy    <span class="cm"># shows current proxy configuration</span></p
 </div><!-- .content-area -->
 </div><!-- .site-wrapper -->
 
-<script>
-/* ──────────────────────────── THEME TOGGLE ──────────────────────────── */
-(function(){
-  const saved = localStorage.getItem('pac-theme');
-  const osPrefers = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  const theme = saved || osPrefers;
-  document.documentElement.setAttribute('data-theme', theme);
-  updateToggleIcon(theme);
-})();
+<!-- AdSense — moved from <head> to end of <body> so it loads after the
+     page content is parsed, reducing render-blocking. Nonce required by CSP. -->
+<script nonce="{{NONCE}}" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=pub-8036763385530087" crossorigin="anonymous"></script>
 
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem('pac-theme', next);
-  updateToggleIcon(next);
-}
-function updateToggleIcon(theme) {
-  const btn = document.querySelector('.theme-toggle');
-  if (btn) btn.textContent = theme === 'dark' ? '☀' : '☾';
-}
-
-/* ──────────────────────────── COLLAPSIBLE NAV ──────────────────────────── */
-function toggleGroup(id) {
-  const group = document.getElementById(id);
-  if (group) group.classList.toggle('collapsed');
-}
-
-/* ──────────────────────────── NAV ACTIVE STATE ──────────────────────────── */
-const anchors = document.querySelectorAll('.anchor-target[id], section[id]');
-const navLinks = document.querySelectorAll('nav a[href^="#"]');
-
-const io = new IntersectionObserver(entries => {
-  entries.forEach(e => {
-    if (!e.isIntersecting) return;
-    // Defer all DOM writes to the next animation frame —
-    // avoids forced reflow from synchronous style invalidation.
-    requestAnimationFrame(() => {
-      navLinks.forEach(l => l.classList.remove('active'));
-      const lnk = document.querySelector(`nav a[href="#${e.target.id}"]`);
-      if (lnk) {
-        lnk.classList.add('active');
-        const grp = lnk.closest('.nav-group');
-        if (grp && grp.classList.contains('collapsed')) {
-          grp.classList.remove('collapsed');
-        }
-      }
-    });
-  });
-}, { rootMargin: '-8% 0px -78% 0px' });
-
-anchors.forEach(a => io.observe(a));
-/* ──────────────────────────── COPY BUTTON ──────────────────────────── */
-function copyCode(btn) {
-  const pre = btn.closest('.code-block').querySelector('pre');
-  navigator.clipboard.writeText(pre.innerText).then(() => {
-    btn.textContent = 'copied!';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = 'copy'; btn.classList.remove('copied'); }, 2000);
-  });
-}
-
-/* ──────────────────────────── PAC SIMULATOR ──────────────────────────── */
-function simulatePAC(code, testUrl, testHost) {
-  if (!testHost) {
-    try { testHost = new URL(testUrl).hostname; } catch(_) { testHost = testUrl; }
-  }
-
-  // ── Helper function implementations ──
-  function isPlainHostName(h) { return !h.includes('.'); }
-
-  function dnsDomainIs(h, domain) {
-    return h.toLowerCase().endsWith(domain.toLowerCase());
-  }
-
-  function localHostOrDomainIs(h, hdom) {
-    return h === hdom || (!h.includes('.') && hdom.startsWith(h + '.'));
-  }
-
-  function isResolvable(h) {
-    // Cannot do real DNS in browser — return true for well-formed hostnames
-    return /^[a-zA-Z0-9._-]+$/.test(h) && h.length > 0;
-  }
-
-  function dnsResolve(h) {
-    // In-browser simulation — return placeholder for known private ranges
-    if (/^\d+\.\d+\.\d+\.\d+$/.test(h)) return h; // already an IP
-    if (/\.(internal|local|corp|lan|intranet)$/.test(h)) return '10.0.0.1'; // simulate internal
-    return ''; // simulate external resolution failure for accurate subnet tests
-  }
-
-  function myIpAddress() { return '192.168.1.100'; /* simulated */ }
-
-  function dnsDomainLevels(h) { return (h.match(/\./g)||[]).length; }
-
-  function shExpMatch(str, pattern) {
-    const rx = '^' + pattern
-      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-      .replace(/\*/g, '.*')
-      .replace(/\?/g, '.') + '$';
-    return new RegExp(rx, 'i').test(str);
-  }
-
-  function ip2num(ip) {
-    return ip.split('.').reduce((a, b) => (a << 8 | parseInt(b, 10)) >>> 0, 0);
-  }
-
-  function isInNet(host, pattern, mask) {
-    if (!host) return false;
-    try {
-      return (ip2num(host) & ip2num(mask)) === (ip2num(pattern) & ip2num(mask));
-    } catch(_) { return false; }
-  }
-
-  function weekdayRange(wd1, wd2, gmt) {
-    const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
-    const useGmt = (wd2 === 'GMT' || gmt === 'GMT');
-    const today = useGmt ? new Date().getUTCDay() : new Date().getDay();
-    const d1 = days.indexOf(wd1);
-    const d2 = (typeof wd2 === 'string' && days.includes(wd2)) ? days.indexOf(wd2) : d1;
-    return d1 <= d2 ? today >= d1 && today <= d2 : today >= d1 || today <= d2;
-  }
-
-  function dateRange() {
-    const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
-    const args = Array.from(arguments);
-    const useGmt = args[args.length-1] === 'GMT';
-    if (useGmt) args.pop();
-    const now = new Date();
-    const m = useGmt ? now.getUTCMonth() : now.getMonth();
-    const d = useGmt ? now.getUTCDate() : now.getDate();
-    const y = useGmt ? now.getUTCFullYear() : now.getFullYear();
-    if (args.length === 1) {
-      const v = args[0];
-      if (typeof v === 'number' && v > 31) return y === v;
-      if (typeof v === 'number') return d === v;
-      if (typeof v === 'string') return m === months.indexOf(v);
-    }
-    return true; // simplified for multi-arg cases
-  }
-
-  function timeRange() {
-    const args = Array.from(arguments).filter(x => typeof x === 'number');
-    const now = new Date();
-    const cur = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-    if (args.length === 2) return cur >= args[0]*3600 && cur < args[1]*3600;
-    if (args.length === 4) return cur >= args[0]*3600+args[1]*60 && cur < args[2]*3600+args[3]*60;
-    if (args.length === 6) return cur >= args[0]*3600+args[1]*60+args[2] && cur < args[3]*3600+args[4]*60+args[5];
-    if (args.length === 1) { const h = args[0]; return cur >= h*3600 && cur < (h+1)*3600; }
-    return true;
-  }
-
-  function alert(msg) { console.log('[PAC alert]', msg); }
-
-  const wrapArgs = [
-    'isPlainHostName','dnsDomainIs','localHostOrDomainIs','isResolvable',
-    'dnsResolve','myIpAddress','dnsDomainLevels','shExpMatch','isInNet',
-    'weekdayRange','dateRange','timeRange','alert'
-  ];
-
-  const wrapVals = [
-    isPlainHostName, dnsDomainIs, localHostOrDomainIs, isResolvable,
-    dnsResolve, myIpAddress, dnsDomainLevels, shExpMatch, isInNet,
-    weekdayRange, dateRange, timeRange, alert
-  ];
-
-  const fn = new Function(...wrapArgs, 'url', 'host',
-    code + '\nreturn FindProxyForURL(url, host);'
-  );
-
-  return fn(...wrapVals, testUrl, testHost);
-}
-
-function runPAC() {
-  const code = document.getElementById('pac-input').value.trim();
-  const url  = document.getElementById('test-url').value.trim();
-  const host = document.getElementById('test-host').value.trim();
-  const el   = document.getElementById('pac-result');
-
-  el.className = 'tester-result';
-  el.textContent = 'Evaluating…';
-  try {
-    const r = simulatePAC(code, url, host);
-    el.textContent = r;
-    el.classList.add('ok');
-  } catch(e) {
-    el.textContent = 'Error: ' + e.message;
-    el.classList.add('err');
-  }
-}
-
-document.getElementById('pac-input').addEventListener('keydown', e => {
-  if (e.ctrlKey && e.key === 'Enter') runPAC();
-});
-document.getElementById('test-url').addEventListener('keydown', e => {
-  if (e.key === 'Enter') runPAC();
-});
-</script>
+<!-- Main site JS — deferred so it runs after the DOM is ready -->
+<script nonce="{{NONCE}}" src="/assets/client.js" defer></script>
 </body>
 </html>
