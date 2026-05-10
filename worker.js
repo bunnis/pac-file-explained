@@ -167,7 +167,7 @@ export default {
       return new Response(pac, {
         headers: {
           'Content-Type':  'application/x-ns-proxy-autoconfig',
-          'Cache-Control': 'public, max-age=300',
+          'Cache-Control': 'public, max-age=31536000, immutable',
         },
       });
     }

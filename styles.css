@@ -38,25 +38,21 @@
   --border:      #d8ddf0;
   --border2:     #bec6df;
   --text:        #3a4268;
-  /* FIX: was #4e5c84 (~4.1:1 on white — below WCAG AA).
-     New value #3d4d72 passes at ~5.2:1 on white and ~4.6:1 on --bg. */
-  --text-dim:    #3d4d72;
+  --text-dim:    #354260;
   --text-bright: #0d1228;
-  --accent:      #0a7a48;
-  --accent2:     #0870a0;
+  --accent:      #006b3f;
+  --accent2:     #005f8c;
   --accent-dim:  #d0eed8;
   --warn:        #7a5500;
   --warn-dim:    #fff3cc;
   --warn-text:   #7a5500;
   --err:         #cc0030;
   --code-bg:     #e4e8f8;
-  --fn-color:    #5e35b1;
+  --fn-color:    #4b1fa6;
   --str-color:   #1a7040;
   --num-color:   #a05000;
   --kw-color:    #0870a0;
-  /* FIX: was #4e5c84 (~2.9:1 on --code-bg #e4e8f8 — fails WCAG AA).
-     New value #3d4d72 passes at ~4.6:1 on #e4e8f8. */
-  --cm-color:    #3d4d72;
+  --cm-color:    #354260;
   --hero-glow:   radial-gradient(ellipse 55% 45% at 25% 40%, rgba(10,122,72,.05), transparent);
   --card-hover:  #bec6df;
   --badge-fn-bg: rgba(94,53,177,.1);
@@ -139,7 +135,7 @@ nav a{
 nav a:hover{color:var(--text-bright);background:var(--bg3)}
 nav a.active{color:var(--accent);background:var(--accent-dim)}
 nav a.fn-link{
-  color:var(--fn-color);opacity:.75;
+  color:var(--fn-color);opacity:1;
   font-family:'IBM Plex Mono',monospace;font-size:.73rem;
 }
 nav a.fn-link:hover{opacity:1;background:var(--badge-fn-bg)}
