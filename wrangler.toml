@@ -6,10 +6,7 @@ routes = [
   { pattern = "pac-file-explained.dev/*", zone_name = "pac-file-explained.dev" }
 ]
 
-[build]
-# Tell wrangler to bundle index.html as a text module
-# so it can be imported in worker.js
 
 [[rules]]
-type = "Text"
-globs = ["**/*.html", "**/*.css", "assets/*.js"]
+type  = "Text"
+globs = ["**/*.html", "**/*.css", "assets/**/*.js"]
