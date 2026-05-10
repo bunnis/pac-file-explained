@@ -105,6 +105,8 @@ function buildCSP(nonce) {
     'object-src':  ["'none'"],
     'base-uri':    ["'self'"],
     'form-action': ["'self'"],
+	
+	'require-trusted-types-for': ["'script'"],
   };
 
   return Object.entries(d)
@@ -117,7 +119,7 @@ const ASSET_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   // One day cache + one week stale-while-revalidate.
   // Bump the filename (e.g. styles.v2.css) to bust the cache on breaking changes.
-  'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+  'Cache-Control': 'public, max-age=31536000, stale-while-revalidate=604800',
 };
 
 /* ─── Fetch handler ─────────────────────────────────────────────────────── */
@@ -195,11 +197,6 @@ export default {
 
           // Primary CSP (enforcing)
           'Content-Security-Policy': buildCSP(nonce),
-
-          // Trusted Types — report-only until confirmed compatible with AdSense.
-          // Promote to enforcing once you verify no violations appear in your
-          // reporting endpoint.
-          'Content-Security-Policy-Report-Only': "require-trusted-types-for 'script'",
         },
       });
     }

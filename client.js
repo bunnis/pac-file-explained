@@ -108,6 +108,11 @@ document.addEventListener('click', function (e) {
 });
 
 /* ═══════════════════════════════════════ PAC LIVE TESTER ═══ */
+var _pacPolicy = (window.trustedTypes && window.trustedTypes.createPolicy)
+  ? window.trustedTypes.createPolicy('pac-evaluator', {
+      createScript: function(s) { return s; }
+    })
+  : null;
 
 function simulatePAC(code, testUrl, testHost) {
   if (!testHost) {
@@ -215,7 +220,8 @@ function simulatePAC(code, testUrl, testHost) {
   ];
 
   // eslint-disable-next-line no-new-func
-  var fn = new Function(wrapArgs, code + '\nreturn FindProxyForURL(url, host);');
+  var fnBody = code + '\nreturn FindProxyForURL(url, host);';
+  var fn = new Function(wrapArgs, _pacPolicy ? _pacPolicy.createScript(fnBody) : fnBody);
   return fn.apply(null, wrapVals);
 }
 
