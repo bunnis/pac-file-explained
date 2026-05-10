@@ -9,14 +9,6 @@
  *   styles.css        ← all site CSS (served at /styles.css)
  *   assets/client.js  ← all site JS  (served at /assets/client.js)
  *
- * wrangler.toml must include these text-import rules so Wrangler treats
- * .css and the assets/*.js file as raw strings, not JS modules:
- *
- *   [[rules]]
- *   type  = "Text"
- *   globs = ["**/*.html", "**/*.css", "assets/**/*.js"]
- *
- * Deploy: wrangler deploy
  */
 
 import html     from './index.html';
