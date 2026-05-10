@@ -89,7 +89,7 @@ function buildCSP(nonce) {
       'https://pagead2.googlesyndication.com',
       'https://googleads.g.doubleclick.net',
       'https://ep1.adtrafficquality.google',
-	  'https://ep2.adtrafficquality.google'
+	  'https://ep2.adtrafficquality.google',
       'https://adservice.google.com',
 	  'https://www.google.com',
     ],
