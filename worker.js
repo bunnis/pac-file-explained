@@ -13,7 +13,7 @@
 
 import html     from './index.html';
 import css      from './styles.css';
-import clientJs from './assets/client.js';
+import clientJs from './assets/client.js?raw';
 
 /* ─── Nonce ────────────────────────────────────────────────────────────────
    Generates a cryptographically random, base64-encoded nonce for each HTTP
