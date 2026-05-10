@@ -173,7 +173,7 @@ export default {
     }
 	
 	/* ── Main page (/ and /index.html) ───────────────────────────────── */
-    if (url.pathname === '/' || url.pathname === '/index.html' || true) {
+    if (url.pathname === '/' || url.pathname === '/index.html') {
       const nonce = generateNonce();
       const page  = html.replace(/\{\{NONCE\}\}/g, nonce);
 
