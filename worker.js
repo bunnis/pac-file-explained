@@ -75,6 +75,7 @@ function buildCSP(nonce) {
 
     'style-src': [
       "'self'",
+	  "'unsafe-inline'",          // required — AdSense injects inline styles
       'https://fonts.googleapis.com',
     ],
 
@@ -95,7 +96,8 @@ function buildCSP(nonce) {
     'frame-src': [
       'https://googleads.g.doubleclick.net',
       'https://tpc.googlesyndication.com',
-      'https://pagead2.googlesyndication.com', // was missing — caused framing CSP errors
+      'https://pagead2.googlesyndication.com',
+	  'https://ep2.adtrafficquality.google',
     ],
 
     'object-src':  ["'none'"],
