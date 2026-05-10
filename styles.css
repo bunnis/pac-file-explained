@@ -30,6 +30,7 @@
   --card-hover:  #2e3447;
   --badge-fn-bg: rgba(167,139,250,.12);
   --shadow:      0 2px 16px rgba(0,0,0,.4);
+  --accent-text: #0a1a10;
 }
 [data-theme="light"] {
   --bg:          #f2f4fb;
@@ -38,25 +39,26 @@
   --border:      #d8ddf0;
   --border2:     #bec6df;
   --text:        #3a4268;
-  --text-dim:    #354260;
+  --text-dim:    #3d4d72;
   --text-bright: #0d1228;
-  --accent:      #006b3f;
-  --accent2:     #005f8c;
+  --accent:      #086f3c;
+  --accent2:     #0870a0;
   --accent-dim:  #d0eed8;
   --warn:        #7a5500;
   --warn-dim:    #fff3cc;
   --warn-text:   #7a5500;
   --err:         #cc0030;
   --code-bg:     #e4e8f8;
-  --fn-color:    #4b1fa6;
+  --fn-color:    #5e35b1;
   --str-color:   #1a7040;
   --num-color:   #a05000;
-  --kw-color:    #0870a0;
-  --cm-color:    #354260;
+  --kw-color:    #065e8a;
+  --cm-color:    #3d4d72;
   --hero-glow:   radial-gradient(ellipse 55% 45% at 25% 40%, rgba(10,122,72,.05), transparent);
   --card-hover:  #bec6df;
   --badge-fn-bg: rgba(94,53,177,.1);
   --shadow:      0 2px 16px rgba(0,0,0,.1);
+  --accent-text: #ffffff;
 }
 
 /* ═══════════════════════════════════════ RESET ═══ */
@@ -120,7 +122,8 @@ main{
   cursor:pointer;user-select:none;transition:color .15s;
 }
 .nav-group-label:hover{color:var(--text)}
-.nav-caret{font-size:.65rem;transition:transform .2s;opacity:.6}
+/* FIX: removed opacity:.6 — at 60% on white bg the effective contrast dropped to ~2.9:1 */
+.nav-caret{font-size:.65rem;transition:transform .2s}
 .nav-group.collapsed .nav-caret{transform:rotate(-90deg)}
 .nav-group-links{
   overflow:hidden;max-height:600px;transition:max-height .25s ease;
@@ -134,8 +137,9 @@ nav a{
 }
 nav a:hover{color:var(--text-bright);background:var(--bg3)}
 nav a.active{color:var(--accent);background:var(--accent-dim)}
+/* FIX: removed opacity:.75 — at 75% on white bg the effective contrast was ~4.18:1 (fail for .73rem text) */
 nav a.fn-link{
-  color:var(--fn-color);opacity:1;
+  color:var(--fn-color);
   font-family:'IBM Plex Mono',monospace;font-size:.73rem;
 }
 nav a.fn-link:hover{opacity:1;background:var(--badge-fn-bg)}
@@ -381,7 +385,11 @@ section>h2{
   background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1.1rem;
 }
 .step-num{
-  background:var(--accent);color:#0a1a10;border-radius:50%;
+  background:var(--accent);
+  /* FIX: was #0a1a10 — dark text on light-mode green accent gave ~3.86:1 (fail).
+     --accent-text is #fff in light mode (~6:1) and #0a1a10 in dark mode (~13:1). */
+  color:var(--accent-text);
+  border-radius:50%;
   width:22px;height:22px;display:flex;align-items:center;justify-content:center;
   font-size:.7rem;font-weight:700;flex-shrink:0;margin-top:.1rem;font-family:'IBM Plex Mono',monospace;
 }
@@ -405,7 +413,10 @@ section>h2{
 .tester-col textarea:focus,.tester-col input:focus{border-color:var(--accent)}
 .tester-col input{margin-bottom:.65rem}
 .tester-run{
-  width:100%;background:var(--accent);color:#0a1a10;border:none;
+  width:100%;background:var(--accent);
+  /* FIX: was #0a1a10 — same issue as .step-num. Uses --accent-text variable. */
+  color:var(--accent-text);
+  border:none;
   padding:.7rem;border-radius:7px;font-family:'IBM Plex Mono',monospace;
   font-size:.82rem;font-weight:600;cursor:pointer;letter-spacing:.05em;
   transition:opacity .15s,transform .1s;
