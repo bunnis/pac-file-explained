@@ -86,11 +86,12 @@ function buildCSP(nonce) {
     'connect-src': [
       "'self'",
       'https://cloudflareinsights.com',
-      // AdSense runtime connections — were blocked before, causing console errors:
       'https://pagead2.googlesyndication.com',
       'https://googleads.g.doubleclick.net',
       'https://ep1.adtrafficquality.google',
+	  'https://ep2.adtrafficquality.google'
       'https://adservice.google.com',
+	  'https://www.google.com',
     ],
 
     'frame-src': [
@@ -98,6 +99,7 @@ function buildCSP(nonce) {
       'https://tpc.googlesyndication.com',
       'https://pagead2.googlesyndication.com',
 	  'https://ep2.adtrafficquality.google',
+	  'https://www.google.com',
     ],
 
     'object-src':  ["'none'"],
