@@ -11,5 +11,5 @@ routes = [
 # so it can be imported in worker.js
 
 [[rules]]
-type  = "Text"
-globs = ["**/*.css", "assets/*.js"]
+type = "Text"
+globs = ["**/*.html", "**/*.css", "assets/*.js"]
