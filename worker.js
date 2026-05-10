@@ -106,7 +106,7 @@ function buildCSP(nonce) {
     'base-uri':    ["'self'"],
     'form-action': ["'self'"],
 	
-	'require-trusted-types-for': ["'script'"],
+
   };
 
   return Object.entries(d)
@@ -197,6 +197,11 @@ export default {
 
           // Primary CSP (enforcing)
           'Content-Security-Policy': buildCSP(nonce),
+
+          // Trusted Types — report-only until confirmed compatible with AdSense.
+          // Promote to enforcing once you verify no violations appear in your
+          // reporting endpoint.
+          'Content-Security-Policy-Report-Only': "require-trusted-types-for 'script'",
         },
       });
     }
