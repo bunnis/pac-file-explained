@@ -83,7 +83,7 @@ function buildCSP(nonce) {
 
     'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
 
-    'img-src': ["'self'", 'data:', 'https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com'],
+    'img-src': ["'self'", 'data:', 'https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com https://*.adtrafficquality.google'],
 
     'connect-src': [
       "'self'",
