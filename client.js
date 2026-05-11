@@ -11,6 +11,20 @@
   'use strict';
 
   /* ═══════════════════════════════════════════════ THEME ════ */
+  const collapseAllBtn = document.getElementById('collapseAllBtn');
+  const collapseIcon   = document.getElementById('collapseIcon');
+
+  collapseAllBtn.addEventListener('click', function () {
+    const groups      = document.querySelectorAll('.nav-group');
+    const anyExpanded = [...groups].some(g => !g.classList.contains('collapsed'));
+
+    groups.forEach(g => {
+      anyExpanded ? g.classList.add('collapsed') : g.classList.remove('collapsed');
+    });
+
+    collapseIcon.textContent   = anyExpanded ? '+' : '−';
+    this.title                 = anyExpanded ? 'Expand all' : 'Collapse all';
+  });
 
   function updateToggleIcon() {
     var btn = document.querySelector('.theme-toggle');
