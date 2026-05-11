@@ -7,7 +7,7 @@
  * Project layout expected by this worker:
  *   index.html        ← page template ({{NONCE}} replaced at request time)
  *   styles.css        ← all site CSS (served at /styles.css)
- *   assets/client.js  ← all site JS  (served at /assets/client.js)
+ *   client.js         ← all site JS  (served at /client.js)
  *
  */
 
@@ -59,7 +59,7 @@ function generateNonce() {
      CSS classes in styles.css.
 */
 function buildCSP(nonce) {
-  const d = {
+  const directives = {
     'default-src': ["'self'"],
 
     'script-src': [
@@ -71,6 +71,8 @@ function buildCSP(nonce) {
       'https://tpc.googlesyndication.com',
       'https://www.googletagservices.com',
       'https://static.cloudflareinsights.com',
+	  'https://www.googletagservices.com',
+	  'https://adservice.google.com',
     ],
 
     'style-src': [
@@ -81,7 +83,7 @@ function buildCSP(nonce) {
 
     'font-src': ["'self'", 'data:', 'https://fonts.gstatic.com'],
 
-    'img-src': ["'self'", 'data:', 'https:'],
+    'img-src': ["'self'", 'data:', 'https://pagead2.googlesyndication.com https://googleads.g.doubleclick.net https://www.google.com'],
 
     'connect-src': [
       "'self'",
@@ -109,7 +111,7 @@ function buildCSP(nonce) {
 
   };
 
-  return Object.entries(d)
+  return Object.entries(directives)
     .map(([k, v]) => `${k} ${v.join(' ')}`)
     .join('; ');
 }
