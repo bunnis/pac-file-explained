@@ -122,6 +122,7 @@ const ASSET_HEADERS = {
   // One day cache + one week stale-while-revalidate.
   // Bump the filename (e.g. styles.v2.css) to bust the cache on breaking changes.
   'Cache-Control': 'public, max-age=31536000, stale-while-revalidate=604800',
+  'Link': '</styles.css?v=1>; rel=preload; as=style',
 };
 
 /* ─── Fetch handler ─────────────────────────────────────────────────────── */
