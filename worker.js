@@ -94,6 +94,7 @@ function buildCSP(nonce) {
 	  'https://ep2.adtrafficquality.google',
       'https://adservice.google.com',
 	  'https://www.google.com',
+	  'https://fundingchoicesmessages.google.com'.
     ],
 
     'frame-src': [
