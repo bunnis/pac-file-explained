@@ -85,7 +85,7 @@ nav{
 nav::-webkit-scrollbar{width:4px}
 nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
-/* Content area — centers main on wide screens */
+/* Content area — column so footer flows below main; align-items centers both horizontally */
 .content-area{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
 main{
   width:100%;max-width:880px;
@@ -220,22 +220,26 @@ section>h2{
 .origin-card a{color:var(--accent);text-underline-offset:3px}
 
 /* ═══════════════════════════════════════ ALERT STYLES ═══ */
+/* display:block so inline text, <code>, and <a> children stay in normal flow.
+   Icon is absolute; left padding = 1.1rem + 1.5em (icon) + .75rem (gap). */
 .alert{
-  display:flex;gap:.75rem;border-radius:7px;
-  padding:.8rem 1.1rem;font-size:.83rem;line-height:1.65;margin-bottom:1.2rem;
+  display:block;position:relative;border-radius:7px;
+  padding:.8rem 1.1rem .8rem calc(1.1rem + 1.5em + .75rem);
+  font-size:.83rem;line-height:1.65;margin-bottom:1.2rem;
 }
+.alert::before{position:absolute;left:1.1rem;top:.82rem;line-height:inherit}
 .alert-warn{
   background:var(--warn-dim);border:1px solid rgba(240,192,90,.25);color:var(--warn-text);
 }
-.alert-warn::before{content:'⚠';flex-shrink:0}
+.alert-warn::before{content:'⚠'}
 .alert-info{
   background:var(--accent-dim);border:1px solid rgba(90,240,168,.2);color:var(--accent);
 }
-.alert-info::before{content:'ℹ';flex-shrink:0}
+.alert-info::before{content:'ℹ'}
 .alert-danger{
   background:#200a10;border:1px solid rgba(240,90,122,.2);color:#f07090;
 }
-.alert-danger::before{content:'⛔';flex-shrink:0}
+.alert-danger::before{content:'⛔'}
 .alert code{font-family:'IBM Plex Mono',monospace;font-size:.85em}
 
 /* ═══════════════════════════════════════ FUNCTION CARDS ═══ */
