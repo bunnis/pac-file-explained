@@ -138,7 +138,7 @@ export default {
     }
 
     /* ── /assets/client.js ────────────────────────────────────────────── */
-    if (url.pathname === '/assets/client.js') {
+    if (url.pathname.includes('/assets/client.js')) {
       return new Response(clientJs, {
         headers: {
           'Content-Type': 'application/javascript; charset=UTF-8',
