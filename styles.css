@@ -86,7 +86,7 @@ nav::-webkit-scrollbar{width:4px}
 nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 /* Content area — centers main on wide screens */
-.content-area{flex:1;min-width:0;display:flex;justify-content:center}
+.content-area{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center}
 main{
   width:100%;max-width:880px;
   padding:0 clamp(1.25rem,5vw,4rem) 6rem;
@@ -443,7 +443,7 @@ section>h2{
 /* Previously: style="margin-top:.65rem" on the Result label in tester */
 .mt-label { margin-top: .65rem; }
 
-footer{border-top:1px solid var(--border);padding:1.75rem 0 0;margin-top:3rem;font-size:.77rem;color:var(--text-dim)}
+footer{width:100%;max-width:880px;border-top:1px solid var(--border);padding:1.75rem clamp(1.25rem,5vw,4rem) 2rem;margin-top:3rem;font-size:.77rem;color:var(--text-dim)}
 footer a{color:var(--text-dim);text-underline-offset:3px}
 footer a:hover{color:var(--accent)}
 
