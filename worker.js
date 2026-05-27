@@ -179,7 +179,27 @@ export default {
         },
       });
     }
-	
+
+	/* ── /sitemap.xml ─────────────────────────────────────────────────── */
+	if (url.pathname === '/sitemap.xml') {
+	  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+	<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+	  <url>
+		<loc>https://pac-file-explained.dev/</loc>
+		<lastmod>2026-05-27</lastmod>
+		<changefreq>monthly</changefreq>
+		<priority>1.0</priority>
+	  </url>
+	</urlset>`;
+
+	  return new Response(sitemap, {
+		headers: {
+		  'Content-Type': 'application/xml; charset=UTF-8',
+		  'Cache-Control': 'public, max-age=86400',
+		},
+	  });
+	}
+
 	/* ── Main page (/ and /index.html) ───────────────────────────────── */
     if (url.pathname === '/' || url.pathname === '/index.html') {
       const nonce = generateNonce();
