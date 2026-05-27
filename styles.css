@@ -93,9 +93,9 @@ nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 .collapse-all-btn {
   background: none;
-  border: 1px solid var(--nav-border, rgba(255,255,255,0.1));
+  border: 1px solid var(--border2);   /* ← uses real theme token */
   border-radius: 4px;
-  color: var(--nav-muted, #888);
+  color: var(--text-dim);             /* ← uses real theme token */
   font-size: 0.72rem;
   cursor: pointer;
   padding: 0.2rem 0.5rem;
@@ -107,8 +107,8 @@ nav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 }
 
 .collapse-all-btn:hover {
-  color: var(--nav-text, #fff);
-  border-color: var(--nav-text, #fff);
+  color: var(--text-bright);          /* ← dark text in light mode, bright in dark */
+  border-color: var(--accent);        /* ← green accent, visible in both modes */
 }
 
 /* Content area — column so footer flows below main; align-items centers both horizontally */
