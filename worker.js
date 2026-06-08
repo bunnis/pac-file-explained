@@ -14,6 +14,7 @@
 import html     from './index.html';
 import css      from './styles.css';
 import clientJs from './client.js';
+import adsTxt from './ads.txt';
 
 /* ─── Nonce ────────────────────────────────────────────────────────────────
    Generates a cryptographically random, base64-encoded nonce for each HTTP
@@ -196,6 +197,17 @@ export default {
 		headers: {
 		  'Content-Type': 'application/xml; charset=UTF-8',
 		  'Cache-Control': 'public, max-age=86400',
+		},
+	  });
+	}
+
+	/* ── /ads.txt ─────────────────────────────────────────────────── */
+	if (url.pathname === '/ads.txt') {
+	  return new Response(adsTxt, {
+		headers: {
+		  'Content-Type': 'text/plain; charset=UTF-8',
+		  'Cache-Control': 'public, max-age=86400',
+		  'X-Content-Type-Options': 'nosniff',
 		},
 	  });
 	}

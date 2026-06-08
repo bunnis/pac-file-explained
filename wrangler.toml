@@ -9,4 +9,4 @@ routes = [
 
 [[rules]]
 type  = "Text"
-globs = ["**/*.html", "**/*.css", "**/client.js"]
+globs = ["**/*.html", "**/*.css", "**/client.js", "**/ads.txt"]
