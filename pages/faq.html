@@ -1,0 +1,83 @@
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-tag">Reference</div>
+  <h1>Frequently asked <em>questions</em></h1>
+  <p class="hero-lead">
+    Quick answers to the questions that come up most often when working with PAC files.
+  </p>
+</div>
+
+<section class="anchor-target">
+  <div class="prose">
+    <h3>What is a PAC file, in one sentence?</h3>
+    <p>
+      A plain-text JavaScript file with a single <code>FindProxyForURL(url, host)</code> function
+      that the browser calls for every request to decide whether to go direct or through a proxy.
+      The full explanation is in <a href="/#intro">What is a PAC file?</a>
+    </p>
+
+    <h3>What's the difference between a PAC file and WPAD?</h3>
+    <p>
+      A PAC file <em>is</em> the configuration script. <strong>WPAD</strong> is the mechanism that
+      lets browsers <em>find</em> that script automatically over DHCP or DNS, so you don't have to
+      enter its URL on every machine. See <a href="/#wpad">WPAD auto-discovery</a>.</p>
+
+    <h3>Can a PAC file match on the URL path?</h3>
+    <p>
+      Only for plain <code>http://</code> URLs. For <code>https://</code>, browsers strip the path
+      and query before calling the PAC function — you receive only the scheme, host, and port. So
+      <code>shExpMatch(url, "*/admin/*")</code> never matches an HTTPS request. See
+      <a href="/#troubleshooting">Troubleshooting</a>.
+    </p>
+
+    <h3>Why does <code>myIpAddress()</code> return 127.0.0.1?</h3>
+    <p>
+      Some browsers and OS configurations can't determine the machine's external interface and
+      return the loopback address instead. Avoid building routing logic around
+      <code>myIpAddress()</code> in those environments; resolve a known internal host instead.
+      Details in <a href="/#troubleshooting">Troubleshooting</a>.
+    </p>
+
+    <h3>How do I make my PAC file fast?</h3>
+    <p>
+      Put DNS-free checks (<code>isPlainHostName</code>, <code>dnsDomainIs</code>,
+      <code>shExpMatch</code>) first, resolve DNS at most once with <code>dnsResolve()</code> and
+      reuse the result, and always pass a pre-resolved IP to <code>isInNet()</code>. See
+      <a href="/#perf">Compute-intensive functions</a> and <a href="/#best-practices">Best practices</a>.
+    </p>
+
+    <h3>How should I serve a PAC file?</h3>
+    <p>
+      Over <strong>HTTPS</strong>, with the MIME type
+      <code>application/x-ns-proxy-autoconfig</code>. The wrong content type causes many browsers to
+      silently ignore the file. For WPAD, name it <code>wpad.dat</code>.
+    </p>
+
+    <h3>My PAC changes aren't taking effect. Why?</h3>
+    <p>
+      Browsers cache PAC files aggressively, often for the whole session. Restart the browser, or
+      send a short <code>Cache-Control: max-age=300</code> header during development, and test logic
+      with <a href="https://github.com/manugarg/pacparser" target="_blank" rel="noopener">pacparser</a>
+      outside the browser.
+    </p>
+
+    <h3>How do I test a PAC file without deploying it?</h3>
+    <p>
+      Use the <a href="/#live-tester">live tester</a> on this site for a quick in-browser check, or
+      <code>pacparser</code>/<code>pactester</code> on the command line for the real evaluation
+      engine. See <a href="/#testing">Testing &amp; debugging</a>.
+    </p>
+
+    <h3>Is the live tester sending my PAC file anywhere?</h3>
+    <p>
+      No. It evaluates everything locally in your browser and transmits nothing. DNS helpers return
+      simulated results. See the <a href="/privacy">Privacy Policy</a>.
+    </p>
+
+    <h3>Is this an official Mozilla or Google site?</h3>
+    <p>
+      No. PAC Explained is an independent, community-maintained reference. Read more on the
+      <a href="/about">about page</a>, and report any error via the <a href="/contact">contact page</a>.
+    </p>
+  </div>
+</section>

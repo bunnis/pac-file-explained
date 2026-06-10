@@ -1,0 +1,89 @@
+<!-- ── HERO ── -->
+<div class="hero">
+  <div class="hero-tag">Reference</div>
+  <h1>PAC &amp; proxy <em>glossary</em></h1>
+  <p class="hero-lead">
+    Plain-language definitions of the terms you'll meet when writing or debugging
+    Proxy Auto-Configuration files.
+  </p>
+</div>
+
+<section class="anchor-target">
+  <h2>Terms</h2>
+  <p class="section-lead">Short definitions, with links to the relevant part of the reference.</p>
+  <table class="trouble-table">
+    <tr><th>Term</th><th>Definition</th></tr>
+    <tr>
+      <td>PAC file</td>
+      <td>A <strong>Proxy Auto-Configuration</strong> file: a plain-text JavaScript file containing a single <code>FindProxyForURL</code> function that tells a browser which proxy (if any) to use for each request. See <a href="/#intro">What is a PAC file?</a></td>
+    </tr>
+    <tr>
+      <td>FindProxyForURL</td>
+      <td>The one function every PAC file must define. The browser calls it for each request with the URL and host, and uses the string it returns to route the connection. See <a href="/#quickstart">Quick start</a>.</td>
+    </tr>
+    <tr>
+      <td>Proxy server</td>
+      <td>An intermediary server that forwards your requests to their destination on your behalf, often used for filtering, caching, or security in corporate networks.</td>
+    </tr>
+    <tr>
+      <td>DIRECT</td>
+      <td>A return value meaning "connect straight to the destination, no proxy". See <a href="/#return-values">Return values</a>.</td>
+    </tr>
+    <tr>
+      <td>PROXY host:port</td>
+      <td>A return value routing the request through the named HTTP/HTTPS proxy.</td>
+    </tr>
+    <tr>
+      <td>SOCKS / SOCKS4 / SOCKS5</td>
+      <td>Return values that route traffic through a SOCKS proxy. SOCKS5 adds authentication and UDP/IPv6 support over SOCKS4.</td>
+    </tr>
+    <tr>
+      <td>Proxy chain / fallback</td>
+      <td>Multiple semicolon-separated directives in one return string. The browser tries them strictly left to right, moving on only when one is unreachable. See <a href="/#proxy-chaining">Proxy chaining</a>.</td>
+    </tr>
+    <tr>
+      <td>WPAD</td>
+      <td><strong>Web Proxy Auto-Discovery</strong>: a mechanism that lets browsers find the PAC file URL automatically via DHCP or DNS, instead of configuring it manually. See <a href="/#wpad">WPAD auto-discovery</a>.</td>
+    </tr>
+    <tr>
+      <td>wpad.dat</td>
+      <td>The conventional filename for a PAC file served through WPAD auto-discovery.</td>
+    </tr>
+    <tr>
+      <td>DHCP Option 252</td>
+      <td>The DHCP field a server can use to hand clients a WPAD/PAC URL at startup — the fastest WPAD method.</td>
+    </tr>
+    <tr>
+      <td>DNS resolution</td>
+      <td>Translating a hostname into an IP address. Several PAC helpers (<code>dnsResolve</code>, <code>isResolvable</code>, <code>isInNet</code> with a hostname) trigger a live lookup that blocks evaluation. See <a href="/#perf">Compute-intensive functions</a>.</td>
+    </tr>
+    <tr>
+      <td>RFC 1918</td>
+      <td>The standard defining private IPv4 ranges (<code>10.0.0.0/8</code>, <code>172.16.0.0/12</code>, <code>192.168.0.0/16</code>) commonly routed <code>DIRECT</code> in PAC files.</td>
+    </tr>
+    <tr>
+      <td>Subnet mask</td>
+      <td>A value like <code>255.255.0.0</code> that, with a network address, defines an IP range — used by <code>isInNet()</code>.</td>
+    </tr>
+    <tr>
+      <td>Shell glob</td>
+      <td>The wildcard pattern syntax used by <code>shExpMatch()</code>: <code>*</code> matches any characters, <code>?</code> matches one. It is <em>not</em> a regular expression.</td>
+    </tr>
+    <tr>
+      <td>MIME type</td>
+      <td>The <code>Content-Type</code> a server sends. PAC files must be served as <code>application/x-ns-proxy-autoconfig</code> or many clients ignore them.</td>
+    </tr>
+    <tr>
+      <td>HTTPS path stripping</td>
+      <td>For HTTPS requests, browsers pass only scheme, host, and port to the PAC function — the path and query are removed. Path-based matching only works for plain HTTP. See <a href="/#troubleshooting">Troubleshooting</a>.</td>
+    </tr>
+    <tr>
+      <td>MITM (man-in-the-middle)</td>
+      <td>An attacker who intercepts traffic. A PAC file fetched over plain HTTP can be swapped by a MITM to reroute all your traffic — serve PAC files over HTTPS. See <a href="/#security">Security</a>.</td>
+    </tr>
+    <tr>
+      <td>Split tunnelling</td>
+      <td>Sending some traffic through the proxy and other traffic directly, based on host, subnet, protocol, or time — the core job of most PAC files.</td>
+    </tr>
+  </table>
+</section>
