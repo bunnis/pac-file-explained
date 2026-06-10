@@ -30,7 +30,7 @@ This site fills that gap. It covers everything findproxyforurl.com did, and more
 
 ## Live site
 
-👉 **[pac-file-explained.dev](https://pac-file-explained.dev)** *(update this once your domain is live)*
+👉 **[pac-file-explained.dev](https://pac-file-explained.dev)** 
 
 ---
 
