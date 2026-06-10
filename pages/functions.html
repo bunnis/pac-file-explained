@@ -1,0 +1,283 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Reference</div>
+  <h1>PAC function <em>reference</em></h1>
+  <p class="hero-lead">Every built-in PAC helper function — full signatures, parameters, and worked examples.</p>
+</div>
+
+<section>
+
+  <!-- isPlainHostName -->
+  <div class="fn-card anchor-target" id="isPlainHostName">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isPlainHostName</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if <code>host</code> contains no dots — meaning it is an unqualified short hostname like <code>localhost</code> or <code>intranet</code> rather than a fully-qualified domain name. The classic, zero-cost test for "is this an internal host?"</p>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>host</td><td>string</td><td>The hostname portion of the URL (no port).</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">isPlainHostName</span>(<span class="str">"www"</span>)            <span class="cm">// true  — no dots</span>
+<span class="fn">isPlainHostName</span>(<span class="str">"www.google.com"</span>) <span class="cm">// false — has dots</span>
+
+<span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// bypass proxy for intranet names</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dnsDomainIs -->
+  <div class="fn-card anchor-target" id="dnsDomainIs">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsDomainIs</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">, </span><span class="fn-param">domain</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if <code>host</code> belongs to the given <code>domain</code> via suffix match. The domain must start with a leading dot. Note: this does <em>not</em> match the bare apex domain — <code>"mozilla.org"</code> does not match <code>".mozilla.org"</code>. No DNS lookup is performed.</p>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>host</td><td>string</td><td>Hostname to test.</td></tr>
+        <tr><td>domain</td><td>string</td><td>Domain to match — must start with a dot, e.g. <code>".example.com"</code>.</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">dnsDomainIs</span>(<span class="str">"www.mozilla.org"</span>, <span class="str">".mozilla.org"</span>)  <span class="cm">// true</span>
+<span class="fn">dnsDomainIs</span>(<span class="str">"mozilla.org"</span>,     <span class="str">".mozilla.org"</span>)  <span class="cm">// false — no subdomain!</span>
+<span class="fn">dnsDomainIs</span>(<span class="str">"www.google.com"</span>,  <span class="str">".mozilla.org"</span>)  <span class="cm">// false</span>
+
+<span class="kw">if</span> ( <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.internal"</span>)
+  || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- localHostOrDomainIs -->
+  <div class="fn-card anchor-target" id="localHostOrDomainIs">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">localHostOrDomainIs</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">, </span><span class="fn-param">hostdom</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if <code>host</code> matches <code>hostdom</code> exactly, <em>or</em> if host is the short (unqualified) version of <code>hostdom</code>. This lets you match both <code>www</code> and <code>www.example.com</code> in a single call.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">localHostOrDomainIs</span>(<span class="str">"www.mozilla.org"</span>, <span class="str">"www.mozilla.org"</span>) <span class="cm">// true</span>
+<span class="fn">localHostOrDomainIs</span>(<span class="str">"www"</span>,             <span class="str">"www.mozilla.org"</span>) <span class="cm">// true  (short name)</span>
+<span class="fn">localHostOrDomainIs</span>(<span class="str">"www.google.com"</span>,  <span class="str">"www.mozilla.org"</span>) <span class="cm">// false</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- isResolvable -->
+  <div class="fn-card anchor-target" id="isResolvable">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isResolvable</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Performs a live DNS lookup for <code>host</code>. Returns <code>true</code> if the hostname resolves, <code>false</code> if not. <strong>Triggers a real DNS query</strong> — adds latency to every PAC evaluation. Prefer <code>dnsDomainIs()</code> or <code>shExpMatch()</code> where possible.</p>
+      <div class="alert alert-warn">DNS queries block the browser during PAC evaluation. See the <a href="/performance">Compute-intensive functions</a> section for strategies to minimise DNS calls.</div>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="cm">// Go direct if hostname resolves in internal DNS</span>
+<span class="kw">if</span> (<span class="fn">isResolvable</span>(host)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}
+<span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- isInNet -->
+  <div class="fn-card anchor-target" id="isInNet">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isInNet</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">, </span><span class="fn-param">pattern</span><span class="fn-paren">, </span><span class="fn-param">mask</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the IP address of <code>host</code> falls within the subnet defined by <code>pattern</code> and <code>mask</code>. If <code>host</code> is a hostname (not already an IP), a DNS lookup is triggered internally. <strong>Always pass a pre-resolved IP</strong> via <code>dnsResolve(host)</code> to avoid double lookups and silent failures.</p>
+      <div class="alert alert-warn">Always use dotted-decimal IP addresses in <code>pattern</code> — never hostnames. Passing a hostname to <code>pattern</code> can fail silently in some implementations.</div>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>host</td><td>string</td><td>IP address or hostname to test. Prefer passing a pre-resolved IP.</td></tr>
+        <tr><td>pattern</td><td>string</td><td>Network address, e.g. <code>"10.0.0.0"</code>.</td></tr>
+        <tr><td>mask</td><td>string</td><td>Subnet mask, e.g. <code>"255.255.0.0"</code>.</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example — resolve once, test multiple subnets</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host); <span class="cm">// resolve once</span>
+<span class="kw">if</span> (ip &amp;&amp; (
+     <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+  || <span class="fn">isInNet</span>(ip, <span class="str">"172.16.0.0"</span>,  <span class="str">"255.240.0.0"</span>)
+  || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>))) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dnsResolve -->
+  <div class="fn-card anchor-target" id="dnsResolve">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsResolve</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Resolves a hostname to its IP address. Returns a dotted-decimal string (e.g. <code>"93.184.216.34"</code>), or an empty string <code>""</code> on failure. Always store the result in a variable and reuse it — calling <code>dnsResolve()</code> multiple times for the same host triggers multiple DNS queries.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);     <span class="cm">// one DNS call — store and reuse</span>
+<span class="kw">if</span> (!ip) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; } <span class="cm">// guard against resolution failure</span>
+
+<span class="kw">if</span> (<span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>, <span class="str">"255.0.0.0"</span>)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- myIpAddress -->
+  <div class="fn-card anchor-target" id="myIpAddress">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">myIpAddress</span><span class="fn-paren">()</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns the IP address of the <em>client machine</em> as a dotted-decimal string. Useful for routing decisions based on the client's subnet — for example, picking a regionally appropriate proxy. In some environments this returns <code>"127.0.0.1"</code> — see <a href="/troubleshooting">Troubleshooting</a>.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="cm">// Select a regional proxy based on the client's subnet</span>
+<span class="kw">var</span> myip = <span class="fn">myIpAddress</span>();
+
+<span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.1.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY eu-proxy.corp.com:8080"</span>;
+}
+<span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.2.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY us-proxy.corp.com:8080"</span>;
+}
+<span class="kw">return</span> <span class="str">"DIRECT"</span>;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dnsDomainLevels -->
+  <div class="fn-card anchor-target" id="dnsDomainLevels">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsDomainLevels</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-num">→ number</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns the number of dots in the hostname. <code>"intranet"</code> → 0, <code>"mozilla.org"</code> → 1, <code>"www.mozilla.org"</code> → 2. A DNS-free alternative to <code>isPlainHostName()</code> that also works for multi-level internal domains.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">dnsDomainLevels</span>(<span class="str">"www"</span>)             <span class="cm">// 0</span>
+<span class="fn">dnsDomainLevels</span>(<span class="str">"mozilla.org"</span>)     <span class="cm">// 1</span>
+<span class="fn">dnsDomainLevels</span>(<span class="str">"www.mozilla.org"</span>) <span class="cm">// 2</span>
+
+<span class="kw">if</span> (<span class="fn">dnsDomainLevels</span>(host) &lt; <span class="num">2</span>) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// treat short names as internal</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- shExpMatch -->
+  <div class="fn-card anchor-target" id="shExpMatch">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">shExpMatch</span><span class="fn-paren">(</span><span class="fn-param">str</span><span class="fn-paren">, </span><span class="fn-param">shexp</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Matches <code>str</code> against a shell glob pattern. <code>*</code> matches any sequence of characters, <code>?</code> matches any single character. This is <em>not</em> a regular expression. Can be applied to both <code>host</code> and the full <code>url</code> — no DNS lookup is triggered.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">shExpMatch</span>(<span class="str">"www.google.com"</span>,  <span class="str">"*.google.*"</span>)         <span class="cm">// true</span>
+<span class="fn">shExpMatch</span>(<span class="str">"www.bing.com"</span>,    <span class="str">"*.google.*"</span>)         <span class="cm">// false</span>
+<span class="fn">shExpMatch</span>(<span class="str">"ftp://example.com/pub"</span>, <span class="str">"ftp:*"</span>)       <span class="cm">// true</span>
+
+<span class="cm">// Match on full URL (including path — works for HTTP, not HTTPS)</span>
+<span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"https://api.example.com/*"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY fast-proxy.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- weekdayRange -->
+  <div class="fn-card anchor-target" id="weekdayRange">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">weekdayRange</span><span class="fn-paren">(</span><span class="fn-param">wd1</span><span class="fn-paren">, </span><span class="fn-param">wd2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">gmt</span><span class="fn-opt">[opt]</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the current day falls within the specified range. Valid values: <code>"SUN"</code> <code>"MON"</code> <code>"TUE"</code> <code>"WED"</code> <code>"THU"</code> <code>"FRI"</code> <code>"SAT"</code>. Ranges wrap around — <code>weekdayRange("FRI","MON")</code> matches Fri, Sat, Sun, Mon. Append <code>"GMT"</code> to use UTC.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">if</span> ( <span class="fn">weekdayRange</span>(<span class="str">"MON"</span>, <span class="str">"FRI"</span>)
+  &amp;&amp; <span class="fn">timeRange</span>(<span class="num">8</span>, <span class="num">18</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>; <span class="cm">// business hours</span>
+}
+<span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// evenings and weekends go direct</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- dateRange -->
+  <div class="fn-card anchor-target" id="dateRange">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dateRange</span><span class="fn-paren">(</span><span class="fn-param">day1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">month1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">year1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">day2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">month2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">year2</span><span class="fn-opt">[opt]</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the current date falls within the given range. Month names: <code>"JAN"</code>–<code>"DEC"</code>. Day numbers: 1–31. Years: four-digit. Arguments can be mixed and matched — you can specify just months, just years, or full date ranges. Append <code>"GMT"</code> for UTC.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">dateRange</span>(<span class="str">"JAN"</span>, <span class="str">"MAR"</span>)                       <span class="cm">// true in Q1</span>
+<span class="fn">dateRange</span>(<span class="num">1</span>, <span class="str">"JAN"</span>, <span class="num">2025</span>, <span class="num">31</span>, <span class="str">"DEC"</span>, <span class="num">2025</span>) <span class="cm">// true all of 2025</span>
+<span class="fn">dateRange</span>(<span class="num">1</span>, <span class="num">15</span>)                              <span class="cm">// true on days 1–15 of any month</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- timeRange -->
+  <div class="fn-card anchor-target" id="timeRange">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">timeRange</span><span class="fn-paren">(</span><span class="fn-param">hour1</span><span class="fn-paren">, </span><span class="fn-param">min1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">sec1</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">hour2</span><span class="fn-paren">, </span><span class="fn-param">min2</span><span class="fn-opt">[opt]</span><span class="fn-paren">, </span><span class="fn-param">sec2</span><span class="fn-opt">[opt]</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns <code>true</code> if the current time falls within the given range. Hours use 24-hour format (0–23). Specify just hours, hours+minutes, or full hours+minutes+seconds. Append <code>"GMT"</code> for UTC evaluation.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">timeRange</span>(<span class="num">9</span>, <span class="num">17</span>)         <span class="cm">// true between 09:00 and 17:00</span>
+<span class="fn">timeRange</span>(<span class="num">9</span>, <span class="num">30</span>, <span class="num">17</span>, <span class="num">0</span>)  <span class="cm">// true between 09:30 and 17:00</span>
+<span class="fn">timeRange</span>(<span class="num">12</span>)            <span class="cm">// true during 12:00:00–12:59:59</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- alert -->
+  <div class="fn-card anchor-target" id="alert-fn">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">alert</span><span class="fn-paren">(</span><span class="fn-param">message</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-void">→ void</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Outputs a debug message during PAC evaluation. In Firefox it appears in the browser console. <strong>Not available in all environments</strong> — in some browsers, calling <code>alert()</code> silently breaks PAC evaluation entirely.</p>
+      <div class="alert alert-danger">Never ship <code>alert()</code> calls in a production PAC file. Remove all debug calls before deploying.</div>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">alert</span>(<span class="str">"PAC: evaluating host = "</span> + host);
+<span class="fn">alert</span>(<span class="fn">isInNet</span>(<span class="fn">dnsResolve</span>(host), <span class="str">"10.0.0.0"</span>, <span class="str">"255.0.0.0"</span>));</pre>
+      </div>
+    </div>
+  </div>
+
+</section>

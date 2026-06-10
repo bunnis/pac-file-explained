@@ -1,0 +1,44 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Dev tools</div>
+  <h1><em>Troubleshooting</em></h1>
+  <p class="hero-lead">Common PAC file bugs and how to fix them.</p>
+</div>
+
+<section id="troubleshooting" class="anchor-target">
+  <table class="trouble-table">
+    <tr><th>Symptom</th><th>Cause &amp; Fix</th></tr>
+    <tr>
+      <td>myIpAddress() returns 127.0.0.1</td>
+      <td>The browser can't determine the machine's external interface IP. This often happens on machines with no active network adapters or unusual routing tables. Some browsers (especially Chrome) always return <code>127.0.0.1</code> in certain OS configurations. Workaround: use subnet detection via <code>dnsResolve()</code> on a known internal host instead, or avoid <code>myIpAddress()</code>-based logic in WPAD deployments.</td>
+    </tr>
+    <tr>
+      <td>HTTPS URL path not available</td>
+      <td>Chrome, Firefox, and all modern browsers strip the path and query from HTTPS URLs before calling <code>FindProxyForURL</code>. You receive only <code>https://hostname:443</code>. <code>shExpMatch(url, "*/some/path*")</code> will <em>never</em> match for HTTPS. Path-based routing only works for plain HTTP.</td>
+    </tr>
+    <tr>
+      <td>PAC file changes not picked up</td>
+      <td>Browsers cache PAC files aggressively — often for the entire browser session. To force a reload: restart the browser completely, or use a short <code>Cache-Control: max-age=300</code> header on your PAC file server. During development, use <code>pacparser</code> to test outside the browser.</td>
+    </tr>
+    <tr>
+      <td>isInNet() always returns false</td>
+      <td>You're passing a hostname to <code>isInNet()</code> that failed DNS resolution — <code>dnsResolve()</code> returned <code>""</code>, and <code>isInNet("", ...)</code> returns false. Always guard: <code>var ip = dnsResolve(host); if (ip &amp;&amp; isInNet(ip, ...))</code>.</td>
+    </tr>
+    <tr>
+      <td>PAC file ignored entirely</td>
+      <td>Wrong MIME type. The server must respond with <code>Content-Type: application/x-ns-proxy-autoconfig</code>. A <code>text/plain</code> or missing content-type causes many browsers to silently reject the file.</td>
+    </tr>
+    <tr>
+      <td>alert() breaks PAC in IE/Edge</td>
+      <td>Internet Explorer and legacy Edge treat <code>alert()</code> as an invalid API in the PAC sandbox — calling it causes the entire PAC function to fail silently and the browser falls through to direct connection. Remove all <code>alert()</code> calls before deploying.</td>
+    </tr>
+    <tr>
+      <td>dnsDomainIs() misses apex domain</td>
+      <td><code>dnsDomainIs("example.com", ".example.com")</code> returns <code>false</code> — the bare apex doesn't match the dotted suffix. Combine with an exact check: <code>host === "example.com" || dnsDomainIs(host, ".example.com")</code>.</td>
+    </tr>
+    <tr>
+      <td>PAC works in Firefox but not Chrome</td>
+      <td>Chrome caches PAC results per-hostname for the duration of a network profile change, ignoring path-based differences. Chrome also resolves DNS from the host OS rather than the browser's DNS stack in some configurations. Test with <code>pacparser</code> to isolate PAC logic from browser-specific quirks.</td>
+    </tr>
+  </table>
+</section>

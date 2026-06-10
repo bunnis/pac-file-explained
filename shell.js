@@ -123,19 +123,19 @@ const SIDEBAR = `<nav id="sidebar" aria-label="Site navigation">
       Function reference<span class="nav-caret" aria-hidden="true">▾</span>
     </div>
     <div class="nav-group-links" id="ng-functions-links">
-      <a href="/#isPlainHostName" class="fn-link">isPlainHostName()</a>
-      <a href="/#dnsDomainIs" class="fn-link">dnsDomainIs()</a>
-      <a href="/#localHostOrDomainIs" class="fn-link">localHostOrDomainIs()</a>
-      <a href="/#isResolvable" class="fn-link">isResolvable()</a>
-      <a href="/#isInNet" class="fn-link">isInNet()</a>
-      <a href="/#dnsResolve" class="fn-link">dnsResolve()</a>
-      <a href="/#myIpAddress" class="fn-link">myIpAddress()</a>
-      <a href="/#dnsDomainLevels" class="fn-link">dnsDomainLevels()</a>
-      <a href="/#shExpMatch" class="fn-link">shExpMatch()</a>
-      <a href="/#weekdayRange" class="fn-link">weekdayRange()</a>
-      <a href="/#dateRange" class="fn-link">dateRange()</a>
-      <a href="/#timeRange" class="fn-link">timeRange()</a>
-      <a href="/#alert-fn" class="fn-link">alert()</a>
+      <a href="/functions#isPlainHostName" class="fn-link">isPlainHostName()</a>
+      <a href="/functions#dnsDomainIs" class="fn-link">dnsDomainIs()</a>
+      <a href="/functions#localHostOrDomainIs" class="fn-link">localHostOrDomainIs()</a>
+      <a href="/functions#isResolvable" class="fn-link">isResolvable()</a>
+      <a href="/functions#isInNet" class="fn-link">isInNet()</a>
+      <a href="/functions#dnsResolve" class="fn-link">dnsResolve()</a>
+      <a href="/functions#myIpAddress" class="fn-link">myIpAddress()</a>
+      <a href="/functions#dnsDomainLevels" class="fn-link">dnsDomainLevels()</a>
+      <a href="/functions#shExpMatch" class="fn-link">shExpMatch()</a>
+      <a href="/functions#weekdayRange" class="fn-link">weekdayRange()</a>
+      <a href="/functions#dateRange" class="fn-link">dateRange()</a>
+      <a href="/functions#timeRange" class="fn-link">timeRange()</a>
+      <a href="/functions#alert-fn" class="fn-link">alert()</a>
     </div>
   </div>
 
@@ -145,8 +145,8 @@ const SIDEBAR = `<nav id="sidebar" aria-label="Site navigation">
       Advanced<span class="nav-caret" aria-hidden="true">▾</span>
     </div>
     <div class="nav-group-links" id="ng-advanced-links">
-      <a href="/#perf">Compute-intensive functions</a>
-      <a href="/#special">Special use cases</a>
+      <a href="/performance">Compute-intensive functions</a>
+      <a href="/special-cases">Special use cases</a>
     </div>
   </div>
 
@@ -156,9 +156,9 @@ const SIDEBAR = `<nav id="sidebar" aria-label="Site navigation">
       Guides<span class="nav-caret" aria-hidden="true">▾</span>
     </div>
     <div class="nav-group-links" id="ng-guides-links">
-      <a href="/#best-practices">Best practices</a>
-      <a href="/#security">Security</a>
-      <a href="/#wpad">WPAD auto-discovery</a>
+      <a href="/best-practices">Best practices</a>
+      <a href="/security">Security</a>
+      <a href="/wpad">WPAD auto-discovery</a>
     </div>
   </div>
 
@@ -168,8 +168,8 @@ const SIDEBAR = `<nav id="sidebar" aria-label="Site navigation">
       Dev tools<span class="nav-caret" aria-hidden="true">▾</span>
     </div>
     <div class="nav-group-links" id="ng-devtools-links">
-      <a href="/#testing">Testing &amp; debugging</a>
-      <a href="/#troubleshooting">Troubleshooting</a>
+      <a href="/testing">Testing &amp; debugging</a>
+      <a href="/troubleshooting">Troubleshooting</a>
     </div>
   </div>
 
@@ -179,8 +179,8 @@ const SIDEBAR = `<nav id="sidebar" aria-label="Site navigation">
       Examples<span class="nav-caret" aria-hidden="true">▾</span>
     </div>
     <div class="nav-group-links" id="ng-ref-links">
-      <a href="/#examples">Common examples</a>
-      <a href="/#live-tester">Live tester</a>
+      <a href="/examples">Common examples</a>
+      <a href="/tester">Live tester</a>
     </div>
   </div>
 
@@ -225,8 +225,15 @@ const FOOTER = `<footer class="site-footer">
   </p>
 </footer>`;
 
-/* ─── Full page ─────────────────────────────────────────────────────────── */
-export function renderPage({ title, description, path, nonce, main, noAds }) {
+/* ─── Full page ─────────────────────────────────────────────────────────────
+   `prev` / `next` (each { href, label }) render a reading-flow nav under the
+   content — used to chain the reference pages together. */
+export function renderPage({ title, description, path, nonce, main, noAds, prev, next }) {
+  const pageNav = (prev || next) ? `
+<nav class="page-nav" aria-label="Reference pages">
+  ${prev ? `<a class="page-nav-prev" href="${prev.href}"><span>← Previous</span><strong>${prev.label}</strong></a>` : '<span></span>'}
+  ${next ? `<a class="page-nav-next" href="${next.href}"><span>Next →</span><strong>${next.label}</strong></a>` : ''}
+</nav>` : '';
   return `${renderHead({ title, description, path, nonce, noAds })}
 <body>
 <div class="site-wrapper">
@@ -237,6 +244,7 @@ ${SIDEBAR}
 <main id="top">
 ${main}
 </main>
+${pageNav}
 
 ${FOOTER}
 

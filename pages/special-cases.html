@@ -1,0 +1,119 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Advanced</div>
+  <h1>Special <em>use cases</em></h1>
+  <p class="hero-lead">Advanced patterns: load balancing, geo-routing, and path-based routing.</p>
+</div>
+
+<section id="special" class="anchor-target">
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Load balancing by client IP last octet</h3>
+      <p>Deterministically split traffic between two proxies based on the client machine's IP address. Even-numbered last octet → proxy A; odd → proxy B. Each client is always sticky to the same proxy.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">var</span> myip      = <span class="fn">myIpAddress</span>();          <span class="cm">// e.g. "192.168.1.24"</span>
+  <span class="kw">var</span> parts     = myip.<span class="fn">split</span>(<span class="str">"."</span>);
+  <span class="kw">var</span> lastOctet = <span class="fn">parseInt</span>(parts[<span class="num">3</span>], <span class="num">10</span>);
+
+  <span class="kw">if</span> ((lastOctet % <span class="num">2</span>) === <span class="num">0</span>) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-a.corp.com:8080; PROXY proxy-b.corp.com:8080"</span>;
+  } <span class="kw">else</span> {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-b.corp.com:8080; PROXY proxy-a.corp.com:8080"</span>;
+  }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Load balancing by hostname hash</h3>
+      <p>Distribute requests across N proxies based on a hash of the target hostname. The same target host always routes to the same proxy — useful for connection reuse and cache warming.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">var</span> proxies = [
+    <span class="str">"PROXY proxy-0.corp.com:8080"</span>,
+    <span class="str">"PROXY proxy-1.corp.com:8080"</span>,
+    <span class="str">"PROXY proxy-2.corp.com:8080"</span>
+  ];
+
+  <span class="cm">// Simple hash: sum of char codes mod N</span>
+  <span class="kw">var</span> hash = <span class="num">0</span>;
+  <span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; host.length; i++) {
+    hash += host.<span class="fn">charCodeAt</span>(i);
+  }
+  <span class="kw">return</span> proxies[hash % proxies.length] + <span class="str">"; PROXY fallback.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Geo-routing by client subnet</h3>
+      <p>Route clients on different office subnets through their nearest regional proxy to minimise latency.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">var</span> myip = <span class="fn">myIpAddress</span>();
+
+  <span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.10.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-eu.corp.com:8080"</span>;   <span class="cm">// London office</span>
+  }
+  <span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.20.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-us.corp.com:8080"</span>;   <span class="cm">// New York office</span>
+  }
+  <span class="kw">if</span> (<span class="fn">isInNet</span>(myip, <span class="str">"10.30.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy-apac.corp.com:8080"</span>; <span class="cm">// Singapore office</span>
+  }
+  <span class="kw">return</span> <span class="str">"PROXY proxy-default.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>URL path-based routing</h3>
+      <p>Route different URL patterns to different proxies. Note: path matching only works for HTTP — HTTPS strips the path before PAC evaluation.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// Route API traffic to a dedicated high-bandwidth proxy</span>
+  <span class="kw">if</span> ( <span class="fn">shExpMatch</span>(url, <span class="str">"http://api.example.com/*"</span>)
+    || <span class="fn">dnsDomainIs</span>(host, <span class="str">".api.example.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY api-proxy.corp.com:8080"</span>;
+  }
+
+  <span class="cm">// Route streaming to a bypass proxy</span>
+  <span class="kw">if</span> ( <span class="fn">dnsDomainIs</span>(host, <span class="str">".netflix.com"</span>)
+    || <span class="fn">dnsDomainIs</span>(host, <span class="str">".spotify.com"</span>)
+    || <span class="fn">dnsDomainIs</span>(host, <span class="str">".youtube.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>; <span class="cm">// bypass proxy for high-bandwidth streaming</span>
+  }
+
+  <span class="kw">return</span> <span class="str">"PROXY default.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>

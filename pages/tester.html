@@ -1,0 +1,55 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Examples</div>
+  <h1>Live PAC <em>tester</em></h1>
+  <p class="hero-lead">Paste your PAC file and evaluate it against any URL — runs entirely in your browser.</p>
+</div>
+
+<section id="live-tester" class="anchor-target">
+
+  <div class="tester-wrap">
+    <div class="tester-header">
+      <h3>In-browser PAC evaluator</h3>
+      <p>All helper functions are simulated in JavaScript. No data is sent anywhere. DNS calls return simulated results.</p>
+    </div>
+    <div class="tester-body">
+      <div class="tester-col tester-col-pac">
+        <label class="tester-label" for="pac-input">Your PAC file</label>
+        <textarea id="pac-input" class="tester-textarea" spellcheck="false">function FindProxyForURL(url, host) {
+  if (isPlainHostName(host)) { return "DIRECT"; }
+
+  if (   dnsDomainIs(host, ".corp.internal")
+      || dnsDomainIs(host, ".corp.com")) {
+    return "DIRECT";
+  }
+
+  var ip = dnsResolve(host);
+  if (ip && (
+       isInNet(ip, "10.0.0.0",    "255.0.0.0")
+    || isInNet(ip, "192.168.0.0", "255.255.0.0"))) {
+    return "DIRECT";
+  }
+
+  return "PROXY proxy.corp.com:8080; DIRECT";
+}</textarea>
+      </div>
+      <div class="tester-col tester-col-url">
+        <div class="tester-field">
+          <label class="tester-label" for="tester-url">Test URL</label>
+          <input id="tester-url" class="tester-input" type="url"
+                 placeholder="https://www.example.com/path">
+        </div>
+        <div class="tester-field">
+          <label class="tester-label" for="tester-host">
+            Host override <span class="tester-opt">(optional)</span>
+          </label>
+          <input id="tester-host" class="tester-input" type="text" placeholder="">
+        </div>
+        <button id="tester-run" class="tester-run-btn">▶ Run PAC</button>
+        <div class="tester-result" id="tester-result">
+          <span class="tester-result-placeholder">Click "Run PAC" to evaluate…</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

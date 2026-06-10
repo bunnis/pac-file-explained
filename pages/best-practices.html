@@ -1,0 +1,21 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Guide</div>
+  <h1>Best <em>practices</em></h1>
+  <p class="hero-lead">Patterns that make PAC files reliable, fast, and maintainable.</p>
+</div>
+
+<section id="best-practices" class="anchor-target">
+  <ul class="bp-list">
+    <li><span class="bp-icon">①</span><div><strong>DNS-free checks go first.</strong> Order your conditions so that <code>isPlainHostName()</code>, <code>dnsDomainIs()</code>, and <code>shExpMatch()</code> are evaluated before anything that triggers DNS. The majority of internal traffic matches these checks and exits early — saving DNS round-trips for the rest.</div></li>
+    <li><span class="bp-icon">②</span><div><strong>Resolve DNS once.</strong> Assign <code>dnsResolve(host)</code> to a variable at the top of the function and reuse it for every <code>isInNet()</code> call. Calling <code>dnsResolve()</code> or <code>isResolvable()</code> multiple times for the same host multiplies your DNS cost.</div></li>
+    <li><span class="bp-icon">③</span><div><strong>Guard DNS failures.</strong> <code>dnsResolve()</code> returns an empty string <code>""</code> on failure, not <code>null</code>. Always check <code>if (ip &amp;&amp; ...)</code> before passing to <code>isInNet()</code> — an empty string will produce incorrect matches.</div></li>
+    <li><span class="bp-icon">④</span><div><strong>Logical operators at the start of lines.</strong> In multi-line conditions, place <code>||</code> and <code>&amp;&amp;</code> at the <em>beginning</em> of each continuation line, not the end. This way every line is self-contained — you can safely copy/paste, delete, or comment out any line without worrying about whether the <em>previous</em> line now has a dangling operator.</div></li>
+    <li><span class="bp-icon">⑤</span><div><strong>Always include a catch-all return.</strong> The last line of your function must unconditionally return something. If execution falls through without returning, the browser's behaviour is undefined — it may throw an error, go direct, or refuse the request entirely.</div></li>
+    <li><span class="bp-icon">⑥</span><div><strong>Serve with the correct MIME type.</strong> The PAC file must be served as <code>application/x-ns-proxy-autoconfig</code>. Some clients also accept <code>application/x-javascript-config</code> or <code>text/javascript</code>, but the former is the most widely supported. An incorrect MIME type will cause clients to silently ignore the file.</div></li>
+    <li><span class="bp-icon">⑦</span><div><strong>Keep fallback chains short.</strong> Each entry in a semicolon-separated return chain adds a full connection timeout before the browser moves to the next one. Limit yourself to two proxies plus <code>DIRECT</code> at most. If you need more proxies, use load balancing logic in the PAC file itself.</div></li>
+    <li><span class="bp-icon">⑧</span><div><strong>Version your PAC files.</strong> Add a comment at the top with a version number and date. PAC files are often cached aggressively — a version comment makes it easy to verify which version a client actually loaded during debugging.</div></li>
+    <li><span class="bp-icon">⑨</span><div><strong>Remove all <code>alert()</code> calls before deploying.</strong> Debug alerts break PAC evaluation in some browsers and can expose internal routing logic to end users. Use <code>pacparser</code> or browser DevTools for testing instead.</div></li>
+    <li><span class="bp-icon">⑩</span><div><strong>Use IP addresses in subnet patterns.</strong> In <code>isInNet(host, pattern, mask)</code>, <code>pattern</code> must always be a dotted-decimal IP — never a hostname. Hostnames in <code>pattern</code> can fail silently across browsers.</div></li>
+  </ul>
+</section>

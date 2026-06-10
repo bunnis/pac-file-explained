@@ -1,0 +1,18 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Guide</div>
+  <h1>PAC file <em>security</em></h1>
+  <p class="hero-lead">PAC files are a high-value attack target. Understand the risks before deploying.</p>
+</div>
+
+<section id="security" class="anchor-target">
+  <div class="alert alert-danger">A compromised or spoofed PAC file can silently redirect <em>all browser traffic</em> — including authenticated sessions — through an attacker-controlled proxy. Take PAC file security seriously.</div>
+  <ul class="bp-list">
+    <li><span class="bp-icon">🔒</span><div><strong>Serve PAC files over HTTPS.</strong> The original PAC spec used plain HTTP. A man-in-the-middle attacker on the same network can intercept an HTTP PAC request and inject a malicious PAC file, silently redirecting all your traffic. Always serve PAC files from an HTTPS URL.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>WPAD auto-discovery is inherently risky.</strong> WPAD uses DHCP and DNS to locate your PAC file automatically. A rogue DHCP server or DNS poisoning attack can serve any machine on the network a malicious PAC URL. Disable WPAD auto-discovery in environments where you don't control the network, and configure the PAC URL explicitly.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>Never embed credentials in PAC files.</strong> PAC files are served as plain text and cached in the browser. Never include proxy usernames, passwords, API keys, or any other secrets in your PAC file.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>Restrict PAC file access.</strong> Your PAC file server should only be accessible from internal networks. A publicly accessible PAC file reveals your internal network topology, proxy addresses, and IP ranges to anyone who fetches it.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>HTTPS path stripping is a known limitation.</strong> For HTTPS URLs, the browser only passes the scheme, host, and port to <code>FindProxyForURL</code> — the path and query are stripped before PAC evaluation. Do not rely on URL path matching for security-critical routing decisions involving HTTPS traffic.</div></li>
+    <li><span class="bp-icon">🔒</span><div><strong>PAC files can be weaponised via DNS rebinding.</strong> A malicious PAC file could call <code>dnsResolve()</code> on attacker-controlled domains to map your internal IP space, or use <code>isInNet()</code> to probe your network topology. Keep PAC evaluation sandboxed and never serve third-party PAC files.</div></li>
+  </ul>
+</section>
