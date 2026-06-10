@@ -14,17 +14,21 @@
   const collapseAllBtn = document.getElementById('collapseAllBtn');
   const collapseIcon   = document.getElementById('collapseIcon');
 
-  collapseAllBtn.addEventListener('click', function () {
-    const groups      = document.querySelectorAll('.nav-group');
-    const anyExpanded = [...groups].some(g => !g.classList.contains('collapsed'));
+  // The sidebar (and this button) is present on every page, but guard anyway
+  // so the rest of the script still runs if the markup ever changes.
+  if (collapseAllBtn) {
+    collapseAllBtn.addEventListener('click', function () {
+      const groups      = document.querySelectorAll('.nav-group');
+      const anyExpanded = [...groups].some(g => !g.classList.contains('collapsed'));
 
-    groups.forEach(g => {
-      anyExpanded ? g.classList.add('collapsed') : g.classList.remove('collapsed');
+      groups.forEach(g => {
+        anyExpanded ? g.classList.add('collapsed') : g.classList.remove('collapsed');
+      });
+
+      if (collapseIcon) collapseIcon.textContent = anyExpanded ? '+' : '−';
+      this.title = anyExpanded ? 'Expand all' : 'Collapse all';
     });
-
-    collapseIcon.textContent   = anyExpanded ? '+' : '−';
-    this.title                 = anyExpanded ? 'Expand all' : 'Collapse all';
-  });
+  }
 
   function updateToggleIcon() {
     var btn = document.querySelector('.theme-toggle');
@@ -121,11 +125,13 @@
 
     /* ═══════════════════════════════════════ ACTIVE NAV LINK ════ */
 
-    var navLinks = document.querySelectorAll('#sidebar a[href^="#"]');
+    // Sidebar section links are root-relative ("/#anchor") so they work from
+    // any page; match any href containing a hash and resolve the target id.
+    var navLinks = document.querySelectorAll('#sidebar a[href*="#"]');
     var sections = [];
     navLinks.forEach(function (a) {
-      var id = a.getAttribute('href').slice(1);
-      var el = document.getElementById(id);
+      var id = (a.getAttribute('href') || '').split('#')[1];
+      var el = id ? document.getElementById(id) : null;
       if (el) sections.push({ el: el, a: a });
     });
 

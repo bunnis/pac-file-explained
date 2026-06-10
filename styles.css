@@ -476,6 +476,19 @@ section>h2{
 footer{width:100%;max-width:880px;border-top:1px solid var(--border);padding:1.75rem clamp(1.25rem,5vw,4rem) 2rem;margin-top:3rem;font-size:.77rem;color:var(--text-dim)}
 footer a{color:var(--text-dim);text-underline-offset:3px}
 footer a:hover{color:var(--accent)}
+.footer-nav{margin-bottom:.8rem;line-height:1.9}
+.footer-nav a{color:var(--text)}
+
+/* ═══════════════ Standalone content pages (about, legal, faq, glossary) ═══ */
+.prose{font-size:.9rem;color:var(--text);line-height:1.75;max-width:64ch}
+.prose>p{margin-bottom:1rem}
+.prose h3{font-family:'Instrument Serif',serif;font-weight:400;font-size:1.22rem;color:var(--text-bright);margin:1.9rem 0 .55rem}
+.prose ul{list-style:disc;margin:0 0 1rem 1.25rem;display:flex;flex-direction:column;gap:.45rem}
+.prose li{padding-left:.15rem}
+.prose a{color:var(--accent);text-underline-offset:3px}
+.prose strong{color:var(--text-bright)}
+.prose code{font-family:'IBM Plex Mono',monospace;font-size:.83em;color:var(--accent);background:var(--accent-dim);padding:.1em .35em;border-radius:3px}
+.page-meta{font-size:.78rem;color:var(--text-dim);margin-bottom:1.6rem}
 
 /* ═══════════════════════════════════════ RESPONSIVE ═══ */
 @media(max-width:860px){

@@ -38,13 +38,28 @@ This site fills that gap. It covers everything findproxyforurl.com did, and more
 
 ```
 pac-file-explained/
-├── index.html       # The entire site — HTML, CSS, and JS in one file
-├── worker.js        # Cloudflare Worker that serves the site
+├── shell.js         # Shared page shell: <head>, sidebar nav, footer
+├── pages/           # One <main> content fragment per page
+│   ├── home.html    #   /            full reference + live tester
+│   ├── about.html   #   /about
+│   ├── faq.html     #   /faq
+│   ├── glossary.html#   /glossary
+│   ├── contact.html #   /contact
+│   ├── privacy.html #   /privacy
+│   ├── terms.html   #   /terms
+│   └── 404.html     #   styled 404 fallback
+├── styles.css       # All site CSS (served at /styles.css)
+├── client.js        # All site JS  (served at /client.js)
+├── worker.js        # Cloudflare Worker: routing, CSP nonce, sitemap, ads.txt
+├── ads.txt          # AdSense authorised sellers
 ├── wrangler.toml    # Wrangler deployment configuration
 └── README.md        # This file
 ```
 
-The site is intentionally a **single `index.html`** file. No build tools, no dependencies, no bundlers — just open it in a browser or deploy it anywhere that serves static files.
+No build tools, no dependencies, no bundlers. Each page is a plain HTML
+fragment in `pages/`; the Worker wraps it with the shared shell in `shell.js`
+(adding the `<head>`, sidebar, footer, and a per-request CSP nonce) and serves
+it. Editing content means editing one fragment — the chrome lives in one place.
 
 ---
 
@@ -110,15 +125,12 @@ routes = [
 
 ## Deploy to other platforms
 
-Because the site is a single static HTML file, it runs anywhere:
-
-| Platform | Command / Method |
-|---|---|
-| **GitHub Pages** | Push `index.html` to a `gh-pages` branch or the `/docs` folder |
-| **Netlify** | Drag and drop the folder at [app.netlify.com](https://app.netlify.com/drop) |
-| **Vercel** | `vercel --prod` in the project folder |
-| **Caddy / Nginx** | Serve `index.html` as a static file |
-| **Any CDN** | Upload `index.html` and set `Content-Type: text/html` |
+The pages are assembled at request time by the Cloudflare Worker (`worker.js` +
+`shell.js`), so it isn't a drop-in static folder anymore. To host elsewhere,
+pre-render each route — for every entry in the Worker's `PAGES` map, render
+`shell.renderPage()` to a static `.html` file (e.g. `/privacy` → `privacy/index.html`)
+and upload the result plus `styles.css`, `client.js`, `ads.txt`, and `sitemap.xml`
+to any static host (GitHub Pages, Netlify, Vercel, a CDN, etc.).
 
 ---
 
@@ -136,8 +148,8 @@ Contributions are welcome. This is a reference site — accuracy and clarity mat
 ### How to contribute
 
 1. Fork the repo
-2. Make your changes in `index.html`
-3. Test locally by opening `index.html` directly in a browser, or run `wrangler dev`
+2. Make your changes in the relevant `pages/*.html` fragment (or `shell.js` for nav/footer)
+3. Test locally with `wrangler dev` (the pages are composed by the Worker)
 4. Open a pull request with a clear description of what changed and why
 
 ### Reporting issues
