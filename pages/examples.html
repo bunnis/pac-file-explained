@@ -1,0 +1,98 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Examples</div>
+  <h1>Common <em>examples</em></h1>
+  <p class="hero-lead">Real-world PAC files for the most common deployment scenarios.</p>
+</div>
+
+<section id="examples" class="anchor-target">
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Corporate: bypass internal, proxy external</h3>
+      <p>The most common enterprise pattern. Internal hosts and RFC1918 ranges go direct; everything else uses a proxy with failover.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// Fast checks first — no DNS cost</span>
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">if</span> ( <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.internal"</span>)
+    || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// One DNS call — reused for all subnet checks</span>
+  <span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);
+  <span class="kw">if</span> (ip &amp;&amp; (
+       <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"172.16.0.0"</span>,  <span class="str">"255.240.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"127.0.0.0"</span>,   <span class="str">"255.0.0.0"</span>))) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="kw">return</span> <span class="str">"PROXY proxy1.corp.com:8080; PROXY proxy2.corp.com:8080; DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Split-tunnel by protocol</h3>
+      <p>Route HTTP through one proxy, HTTPS through another, FTP directly.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"http:*"</span>))  { <span class="kw">return</span> <span class="str">"PROXY http-proxy.corp.com:8080"</span>; }
+  <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"https:*"</span>)) { <span class="kw">return</span> <span class="str">"PROXY ssl-proxy.corp.com:8443"</span>;  }
+  <span class="kw">if</span> (<span class="fn">shExpMatch</span>(url, <span class="str">"ftp:*"</span>))   { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Time-based routing</h3>
+      <p>Use the corporate proxy during business hours; go direct outside those hours.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+
+  <span class="kw">if</span> ( <span class="fn">weekdayRange</span>(<span class="str">"MON"</span>, <span class="str">"FRI"</span>)
+    &amp;&amp; <span class="fn">timeRange</span>(<span class="num">8</span>, <span class="num">18</span>)) {
+    <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
+  }
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>SOCKS5 with HTTP fallback</h3>
+      <p>Try a SOCKS5 proxy first, then fall back to an HTTP proxy, then direct.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>proxy.pac</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+  <span class="kw">return</span> <span class="str">"SOCKS5 socks.corp.com:1080; PROXY proxy.corp.com:8080; DIRECT"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+</section>

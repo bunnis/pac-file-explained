@@ -151,6 +151,21 @@
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
+    /* ═══════════════════════════════════════ CURRENT PAGE ════ */
+    // Mark the nav link for the current page and expand its group, so visitors
+    // can see where they are in the multi-page site. In-page anchor links are
+    // left to the scroll-spy above.
+    var here = location.pathname.replace(/\/+$/, '') || '/';
+    document.querySelectorAll('#sidebar .nav-group-links a').forEach(function (a) {
+      var href = a.getAttribute('href') || '';
+      var linkPath = href.split('#')[0].replace(/\/+$/, '') || '/';
+      if (linkPath === here) {
+        var grp = a.closest('.nav-group');
+        if (grp) grp.classList.remove('collapsed');
+        if (href.indexOf('#') === -1) a.classList.add('active');
+      }
+    });
+
     /* ═══════════════════════════════════════ LIVE PAC TESTER ════ */
 
     var runBtn      = document.getElementById('tester-run');

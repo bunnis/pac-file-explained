@@ -1,0 +1,74 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Advanced</div>
+  <h1>Compute-intensive <em>functions</em></h1>
+  <p class="hero-lead">Which PAC functions trigger blocking DNS lookups, and how to avoid unnecessary ones.</p>
+</div>
+
+<section id="perf" class="anchor-target">
+  <p class="fn-desc">
+    PAC evaluation is <strong>synchronous and blocking</strong> — the browser freezes the request
+    until <code>FindProxyForURL</code> returns. Functions that perform DNS resolution amplify this
+    effect: every DNS round-trip adds tens to hundreds of milliseconds to every request.
+  </p>
+  <div class="perf-grid">
+    <div class="perf-card">
+      <div class="perf-card-name">dnsResolve()</div>
+      <div class="perf-card-cost perf-cost-high">● High cost</div>
+      <div class="perf-card-desc">Always triggers a live DNS lookup. Cache the result in a variable — never call twice for the same host.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">isResolvable()</div>
+      <div class="perf-card-cost perf-cost-high">● High cost</div>
+      <div class="perf-card-desc">Performs a DNS lookup on every call. Replace with <code>dnsDomainIs()</code> or <code>shExpMatch()</code> wherever possible.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">isInNet() + hostname</div>
+      <div class="perf-card-cost perf-cost-high">● High cost</div>
+      <div class="perf-card-desc">If the first argument is a hostname (not an IP), isInNet() internally calls dnsResolve(). Always pre-resolve.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">isInNet() + IP</div>
+      <div class="perf-card-cost perf-cost-low">● No cost</div>
+      <div class="perf-card-desc">If you pass a pre-resolved IP (from dnsResolve), no additional DNS lookup occurs. This is the correct pattern.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">dnsDomainIs()</div>
+      <div class="perf-card-cost perf-cost-low">● No cost</div>
+      <div class="perf-card-desc">Pure string suffix match. Zero DNS overhead. Always prefer this over isResolvable() for domain checks.</div>
+    </div>
+    <div class="perf-card">
+      <div class="perf-card-name">shExpMatch()</div>
+      <div class="perf-card-cost perf-cost-low">● No cost</div>
+      <div class="perf-card-desc">Pure string glob match. Zero DNS overhead. Good for URL and host pattern matching.</div>
+    </div>
+  </div>
+  <p class="fn-desc">The golden rule:</p>
+  <div class="code-block">
+    <div class="code-header"><span>DNS optimisation pattern</span><button class="copy-btn">copy</button></div>
+    <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+
+  <span class="cm">// ✓ FAST: domain checks first — zero DNS cost</span>
+  <span class="kw">if</span> ( <span class="fn">isPlainHostName</span>(host)
+    || <span class="fn">dnsDomainIs</span>(host, <span class="str">".corp.com"</span>)
+    || <span class="fn">shExpMatch</span>(host, <span class="str">"*.local"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// ✓ ONE DNS call — stored and reused below</span>
+  <span class="kw">var</span> ip = <span class="fn">dnsResolve</span>(host);
+  <span class="kw">if</span> (!ip) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; } <span class="cm">// ✓ guard failure case</span>
+
+  <span class="cm">// ✓ FAST: isInNet receives an IP — no extra DNS</span>
+  <span class="kw">if</span> ( <span class="fn">isInNet</span>(ip, <span class="str">"10.0.0.0"</span>,    <span class="str">"255.0.0.0"</span>)
+    || <span class="fn">isInNet</span>(ip, <span class="str">"192.168.0.0"</span>, <span class="str">"255.255.0.0"</span>)) {
+    <span class="kw">return</span> <span class="str">"DIRECT"</span>;
+  }
+
+  <span class="cm">// ✗ WRONG — triggers a second DNS lookup for the same host:</span>
+  <span class="cm">// if (isInNet(dnsResolve(host), "10.0.0.0", "255.0.0.0")) { ... }</span>
+
+  <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
+}</pre>
+  </div>
+</section>

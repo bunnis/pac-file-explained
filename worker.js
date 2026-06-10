@@ -23,7 +23,20 @@
 
 import { renderPage } from './shell.js';
 
-import home     from './pages/home.html';
+// Reference pages (the split-up single-page reference)
+import home            from './pages/home.html';
+import functions       from './pages/functions.html';
+import performance     from './pages/performance.html';
+import specialCases    from './pages/special-cases.html';
+import bestPractices   from './pages/best-practices.html';
+import security        from './pages/security.html';
+import wpad            from './pages/wpad.html';
+import testing         from './pages/testing.html';
+import troubleshooting from './pages/troubleshooting.html';
+import examples        from './pages/examples.html';
+import tester          from './pages/tester.html';
+
+// Standalone pages
 import about    from './pages/about.html';
 import faq      from './pages/faq.html';
 import glossary from './pages/glossary.html';
@@ -37,12 +50,74 @@ import clientJs from './client.js';
 import adsTxt   from './ads.txt';
 
 /* ─── Page registry ─────────────────────────────────────────────────────────
-   Maps a request path to the metadata + content fragment for that page. */
+   Maps a request path to the metadata + content fragment for that page.
+   `navLabel` is the short label used in the prev/next reading-flow nav. */
 const PAGES = {
   '/': {
     title: 'PAC Explained — Proxy Auto-Configuration Reference',
     description: 'The complete Proxy Auto-Configuration (PAC) file reference. Every function, best practices, security, WPAD, testing tools, and a live tester. pac-file-explained.dev — community replacement for findproxyforurl.com.',
+    navLabel: 'Overview',
     main: home,
+  },
+  '/functions': {
+    title: 'PAC function reference — PAC Explained',
+    description: 'Every built-in PAC helper function with signatures, parameters, and examples: isPlainHostName, dnsDomainIs, isInNet, dnsResolve, shExpMatch, weekdayRange, and more.',
+    navLabel: 'Function reference',
+    main: functions,
+  },
+  '/performance': {
+    title: 'PAC performance & DNS cost — PAC Explained',
+    description: 'Which PAC helper functions trigger blocking DNS lookups, the cost of each, and how to order checks so proxy auto-configuration stays fast.',
+    navLabel: 'Performance',
+    main: performance,
+  },
+  '/special-cases': {
+    title: 'Advanced PAC patterns — PAC Explained',
+    description: 'Advanced PAC file patterns: load balancing by client IP or hostname hash, geo-routing by subnet, and URL path-based routing.',
+    navLabel: 'Special use cases',
+    main: specialCases,
+  },
+  '/best-practices': {
+    title: 'PAC file best practices — PAC Explained',
+    description: 'Ten rules for reliable, fast, maintainable PAC files: DNS-free checks first, resolve once, guard failures, a catch-all return, and the correct MIME type.',
+    navLabel: 'Best practices',
+    main: bestPractices,
+  },
+  '/security': {
+    title: 'PAC file security — PAC Explained',
+    description: 'PAC file security risks and how to mitigate them: MITM injection over HTTP, WPAD poisoning, credential exposure, DNS rebinding, and HTTPS path stripping.',
+    navLabel: 'Security',
+    main: security,
+  },
+  '/wpad': {
+    title: 'WPAD auto-discovery — PAC Explained',
+    description: 'How browsers find PAC files automatically via DHCP option 252 and DNS, how to host wpad.dat with the right MIME type, and why WPAD can be a security risk.',
+    navLabel: 'WPAD',
+    main: wpad,
+  },
+  '/testing': {
+    title: 'Testing & debugging PAC files — PAC Explained',
+    description: 'How to test and debug PAC files with pacparser/pactester, the Firefox browser console, and Chrome netlog before deploying to production.',
+    navLabel: 'Testing & debugging',
+    main: testing,
+  },
+  '/troubleshooting': {
+    title: 'PAC troubleshooting — PAC Explained',
+    description: 'Fixes for common PAC file bugs: myIpAddress returning 127.0.0.1, HTTPS path stripping, caching, wrong MIME type, isInNet failures, and alert() breaking evaluation.',
+    navLabel: 'Troubleshooting',
+    main: troubleshooting,
+  },
+  '/examples': {
+    title: 'PAC file examples — PAC Explained',
+    description: 'Real-world PAC file examples: corporate bypass-internal/proxy-external, split-tunnel by protocol, time-based routing, and SOCKS5 with HTTP fallback.',
+    navLabel: 'Examples',
+    main: examples,
+  },
+  '/tester': {
+    title: 'Live PAC file tester — PAC Explained',
+    description: 'Paste a PAC file and evaluate it against any URL right in your browser. All PAC helper functions are simulated and no data is sent anywhere.',
+    navLabel: 'Live tester',
+    main: tester,
   },
   '/about': {
     title: 'About — PAC Explained',
@@ -76,8 +151,17 @@ const PAGES = {
   },
 };
 
-/* Canonical paths included in sitemap.xml */
-const SITEMAP_PATHS = ['/', '/about', '/faq', '/glossary', '/contact', '/privacy', '/terms'];
+/* Reference reading order — drives the prev/next page nav. */
+const REF_ORDER = [
+  '/', '/functions', '/performance', '/special-cases', '/best-practices',
+  '/security', '/wpad', '/testing', '/troubleshooting', '/examples', '/tester',
+];
+
+/* Canonical paths included in sitemap.xml (all real pages). */
+const SITEMAP_PATHS = [
+  ...REF_ORDER,
+  '/about', '/faq', '/glossary', '/contact', '/privacy', '/terms',
+];
 
 /* ─── Nonce ────────────────────────────────────────────────────────────────
    Generates a cryptographically random, base64-encoded nonce for each HTTP
@@ -162,13 +246,26 @@ function buildCSP(nonce) {
    security headers. Used for every HTML route, including the 404 fallback. */
 function servePage(path, meta, status = 200, noAds = false) {
   const nonce = generateNonce();
-  const body  = renderPage({
+
+  // Reading-flow prev/next for the reference pages.
+  let prev, next;
+  const i = REF_ORDER.indexOf(path);
+  if (i !== -1) {
+    const p = REF_ORDER[i - 1];
+    const n = REF_ORDER[i + 1];
+    if (p) prev = { href: p, label: PAGES[p].navLabel };
+    if (n) next = { href: n, label: PAGES[n].navLabel };
+  }
+
+  const body = renderPage({
     title:       meta.title,
     description: meta.description,
     path,
     nonce,
     main:        meta.main,
     noAds,
+    prev,
+    next,
   });
 
   return new Response(body, {

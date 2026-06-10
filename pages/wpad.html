@@ -1,0 +1,33 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Guide</div>
+  <h1>WPAD <em>auto-discovery</em></h1>
+  <p class="hero-lead">How browsers automatically find your PAC file — and why it can be risky.</p>
+</div>
+
+<section id="wpad" class="anchor-target">
+  <p class="fn-desc">
+    Web Proxy Auto-Discovery (WPAD) lets browsers find the PAC file URL automatically using DHCP or DNS,
+    eliminating the need to configure the PAC URL on every client machine. The convention is to name the
+    file <code class="icode">wpad.dat</code> (instead of <code class="icode">proxy.pac</code>) when using WPAD.
+  </p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body"><strong>DHCP first:</strong> The client sends a DHCP request on startup. If the DHCP server includes <strong>Option 252</strong> (WPAD URL), the client uses that URL to fetch the PAC file directly. This is the fastest and most reliable method.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body"><strong>DNS fallback:</strong> If DHCP doesn't provide a WPAD URL, the client tries DNS. It constructs candidate URLs by prepending <code>wpad.</code> to the domain: e.g. <code>http://wpad.corp.com/wpad.dat</code>. The first hostname that resolves and serves a valid PAC file wins.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body"><strong>Configure your server:</strong> Host <code>wpad.dat</code> at the WPAD URL with MIME type <code>application/x-ns-proxy-autoconfig</code>. Ensure the hostname <code>wpad.yourdomain.com</code> resolves in internal DNS.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body"><strong>Browser settings:</strong> Enable "Automatically detect proxy settings" in the browser or OS proxy configuration. On Windows this is under <em>Settings → Network → Proxy → Automatically detect settings</em>.</div>
+    </div>
+  </div>
+  <div class="alert alert-warn">WPAD is disabled by default in many modern browsers and OS configurations due to security risks (see <a href="/security">Security</a>). Consider configuring the PAC URL explicitly via Group Policy or MDM instead of relying on WPAD auto-discovery.</div>
+</section>

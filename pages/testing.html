@@ -1,0 +1,85 @@
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-tag">Dev tools</div>
+  <h1>Testing &amp; <em>debugging</em></h1>
+  <p class="hero-lead">How to validate your PAC file before deploying it to production.</p>
+</div>
+
+<section id="testing" class="anchor-target">
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>pacparser — command-line PAC tester</h3>
+      <p>The most reliable way to test PAC files outside a browser. Runs the full PAC evaluation engine, not a simulation.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>bash — install and use pacparser</span><button class="copy-btn">copy</button></div>
+        <pre><span class="cm"># Install (macOS)</span>
+brew install pacparser
+
+<span class="cm"># Install (Ubuntu / Debian)</span>
+sudo apt install pacparser
+
+<span class="cm"># Test a PAC file against a URL</span>
+pactester -p proxy.pac -u https://www.google.com -h www.google.com
+
+<span class="cm"># Expected output:</span>
+<span class="cm"># PROXY proxy.corp.com:8080</span>
+
+<span class="cm"># Test multiple URLs from a file</span>
+pactester -p proxy.pac -f urls.txt</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Firefox browser debugging</h3>
+      <p>Firefox exposes PAC file evaluation and <code>alert()</code> output in the browser console.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>firefox about:config + console</span><button class="copy-btn">copy</button></div>
+        <pre><span class="cm"># 1. Open about:config → set network.proxy.autoconfig_url to your PAC file URL</span>
+<span class="cm"># 2. Set network.proxy.type = 2 (use PAC file)</span>
+<span class="cm"># 3. Open DevTools → Browser Console (not page console)</span>
+<span class="cm"># 4. alert() calls in your PAC file appear as "PAC-alert: ..." messages</span>
+<span class="cm"># 5. Navigate to a URL and watch the console for evaluation output</span></pre>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><span>PAC debug snippet (remove before deploying)</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">function</span> <span class="fn">FindProxyForURL</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">var</span> result = <span class="fn">_findProxy</span>(url, host);
+  <span class="fn">alert</span>(<span class="str">"PAC: "</span> + host + <span class="str">" → "</span> + result);
+  <span class="kw">return</span> result;
+}
+
+<span class="kw">function</span> <span class="fn">_findProxy</span>(<span class="str">url</span>, <span class="str">host</span>) {
+  <span class="kw">if</span> (<span class="fn">isPlainHostName</span>(host)) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; }
+  <span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="example-card">
+    <div class="example-header">
+      <h3>Chrome / macOS netlog</h3>
+      <p>Chrome provides a network log viewer that shows PAC evaluation results per request.</p>
+    </div>
+    <div class="example-body">
+      <div class="code-block">
+        <div class="code-header"><span>chrome netlog</span><button class="copy-btn">copy</button></div>
+        <pre><span class="cm"># Open chrome://net-export/ → Start Logging → browse → Stop</span>
+<span class="cm"># Open https://netlog-viewer.appspot.com/ → load the exported JSON</span>
+<span class="cm"># Filter events by "PAC_RESOLVE" to see per-request PAC results</span>
+
+<span class="cm"># macOS: test PAC from the command line using scutil</span>
+scutil --proxy    <span class="cm"># shows current proxy configuration</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <p class="fn-desc mt">Also try the <a href="/tester" class="color-accent">Live Tester</a> on this page for quick in-browser validation. It simulates all PAC helper functions and evaluates your PAC file client-side — no data is sent anywhere.</p>
+</section>
