@@ -111,8 +111,18 @@
     </div>
     <div class="ret-card">
       <div class="ret-card-name">PROXY host:port</div>
-      <div class="ret-card-desc">Route through an HTTP/HTTPS proxy at the given host and port.</div>
+      <div class="ret-card-desc">Route through an HTTP proxy. The browser talks to the proxy over plain HTTP — HTTPS traffic is still carried through it, tunnelled with <code>CONNECT</code>. The original, universally supported directive.</div>
       <div class="ret-card-ex">"PROXY proxy.corp.com:8080"</div>
+    </div>
+    <div class="ret-card">
+      <div class="ret-card-name">HTTP host:port</div>
+      <div class="ret-card-desc">Modern, explicit spelling of <code>PROXY</code> — routes through an HTTP proxy. Same behaviour; added alongside <code>HTTPS</code> for symmetry. Firefox 55+ and Chromium-based browsers.</div>
+      <div class="ret-card-ex">"HTTP proxy.corp.com:8080"</div>
+    </div>
+    <div class="ret-card">
+      <div class="ret-card-name">HTTPS host:port</div>
+      <div class="ret-card-desc">Route through an HTTPS proxy: the browser encrypts its connection <em>to the proxy itself</em> with TLS, so requests can't be observed on the local network. Not the same as <code>PROXY</code>. Firefox 55+ and Chromium-based browsers.</div>
+      <div class="ret-card-ex">"HTTPS proxy.corp.com:443"</div>
     </div>
     <div class="ret-card">
       <div class="ret-card-name">SOCKS host:port</div>
@@ -124,6 +134,12 @@
       <div class="ret-card-desc">Explicitly select SOCKS version 4 or 5 when the version matters.</div>
       <div class="ret-card-ex">"SOCKS5 socks5.corp.com:1080"</div>
     </div>
+  </div>
+  <div class="alert alert-info">
+    <strong>Older clients:</strong> the <code>HTTP</code> and <code>HTTPS</code> directives are ignored by
+    legacy stacks (Internet Explorer, WinHTTP services, old proxy libraries). When you use them, keep a
+    <code>PROXY</code> or <code>DIRECT</code> fallback in the chain:
+    <code class="icode">"HTTPS proxy.corp.com:443; PROXY proxy.corp.com:8080; DIRECT"</code>
   </div>
 </section>
 

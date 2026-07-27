@@ -1,0 +1,15 @@
+# Wrangler local dev state and secrets
+.wrangler/
+.dev.vars
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Claude Code local config (contains machine-specific paths)
+.claude/
+
+# OS junk
+.DS_Store
+Thumbs.db
+desktop.ini

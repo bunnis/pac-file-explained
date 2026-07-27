@@ -14,8 +14,8 @@
 
 This site fills that gap. It covers everything findproxyforurl.com did, and more:
 
-- **Full function reference** — every PAC helper function with signatures, parameters, and examples
-- **Return values** — `DIRECT`, `PROXY`, `SOCKS4`, `SOCKS5` explained
+- **Full function reference** — every PAC helper function with signatures, parameters, and examples, including the IPv6-aware `Ex` extensions
+- **Return values** — `DIRECT`, `PROXY`, `HTTP`, `HTTPS`, `SOCKS`, `SOCKS4`, `SOCKS5` explained
 - **Proxy chaining** — how the browser evaluates fallback chains left-to-right
 - **Compute-intensive functions** — which functions trigger DNS and how to avoid unnecessary lookups
 - **Best practices** — 10 rules for reliable, fast, maintainable PAC files

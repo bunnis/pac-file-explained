@@ -20,14 +20,34 @@
     <p>
       A PAC file <em>is</em> the configuration script. <strong>WPAD</strong> is the mechanism that
       lets browsers <em>find</em> that script automatically over DHCP or DNS, so you don't have to
-      enter its URL on every machine. See <a href="/#wpad">WPAD auto-discovery</a>.</p>
+      enter its URL on every machine. See <a href="/wpad">WPAD auto-discovery</a>.</p>
+
+    <h3>What's the difference between the <code>PROXY</code> and <code>HTTPS</code> return values?</h3>
+    <p>
+      <code>PROXY host:port</code> makes the browser talk to the proxy over plain, unencrypted
+      HTTP (HTTPS traffic is still tunnelled through it with <code>CONNECT</code>).
+      <code>HTTPS host:port</code> makes the browser encrypt its connection <em>to the proxy
+      itself</em> with TLS. Keep a <code>PROXY</code> or <code>DIRECT</code> fallback after an
+      <code>HTTPS</code> directive for older clients. See
+      <a href="/#return-values">Return values</a>.
+    </p>
 
     <h3>Can a PAC file match on the URL path?</h3>
     <p>
       Only for plain <code>http://</code> URLs. For <code>https://</code>, browsers strip the path
       and query before calling the PAC function — you receive only the scheme, host, and port. So
       <code>shExpMatch(url, "*/admin/*")</code> never matches an HTTPS request. See
-      <a href="/#troubleshooting">Troubleshooting</a>.
+      <a href="/troubleshooting">Troubleshooting</a>.
+    </p>
+
+    <h3>Do PAC files support IPv6?</h3>
+    <p>
+      The core helper functions are IPv4-only. Microsoft defined IPv6-aware
+      <strong>Ex variants</strong> (<code>dnsResolveEx</code>, <code>isInNetEx</code>,
+      <code>myIpAddressEx</code>, and others) that work in the WinHTTP/WinINET stack when the
+      PAC file defines <code>FindProxyForURLEx</code> — but Chrome and Firefox do not implement
+      them. See the <a href="/functions#ex-functions">IPv6 extensions</a> section of the
+      function reference.
     </p>
 
     <h3>Why does <code>myIpAddress()</code> return 127.0.0.1?</h3>
@@ -35,7 +55,7 @@
       Some browsers and OS configurations can't determine the machine's external interface and
       return the loopback address instead. Avoid building routing logic around
       <code>myIpAddress()</code> in those environments; resolve a known internal host instead.
-      Details in <a href="/#troubleshooting">Troubleshooting</a>.
+      Details in <a href="/troubleshooting">Troubleshooting</a>.
     </p>
 
     <h3>How do I make my PAC file fast?</h3>
@@ -43,7 +63,7 @@
       Put DNS-free checks (<code>isPlainHostName</code>, <code>dnsDomainIs</code>,
       <code>shExpMatch</code>) first, resolve DNS at most once with <code>dnsResolve()</code> and
       reuse the result, and always pass a pre-resolved IP to <code>isInNet()</code>. See
-      <a href="/#perf">Compute-intensive functions</a> and <a href="/#best-practices">Best practices</a>.
+      <a href="/performance">Compute-intensive functions</a> and <a href="/best-practices">Best practices</a>.
     </p>
 
     <h3>How should I serve a PAC file?</h3>
@@ -63,9 +83,9 @@
 
     <h3>How do I test a PAC file without deploying it?</h3>
     <p>
-      Use the <a href="/#live-tester">live tester</a> on this site for a quick in-browser check, or
+      Use the <a href="/tester">live tester</a> on this site for a quick in-browser check, or
       <code>pacparser</code>/<code>pactester</code> on the command line for the real evaluation
-      engine. See <a href="/#testing">Testing &amp; debugging</a>.
+      engine. See <a href="/testing">Testing &amp; debugging</a>.
     </p>
 
     <h3>Is the live tester sending my PAC file anywhere?</h3>

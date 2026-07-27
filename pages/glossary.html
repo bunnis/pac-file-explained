@@ -31,7 +31,15 @@
     </tr>
     <tr>
       <td>PROXY host:port</td>
-      <td>A return value routing the request through the named HTTP/HTTPS proxy.</td>
+      <td>A return value routing the request through the named HTTP proxy. The browser speaks plain HTTP to the proxy; HTTPS traffic is tunnelled through it with <code>CONNECT</code>. See <a href="/#return-values">Return values</a>.</td>
+    </tr>
+    <tr>
+      <td>HTTP host:port</td>
+      <td>A newer, explicit spelling of <code>PROXY</code> (Firefox 55+, Chromium). Same behaviour: route through an HTTP proxy.</td>
+    </tr>
+    <tr>
+      <td>HTTPS host:port</td>
+      <td>A return value routing the request through an HTTPS proxy — the browser encrypts its connection to the proxy itself with TLS. Not the same as <code>PROXY</code>, which talks to the proxy unencrypted.</td>
     </tr>
     <tr>
       <td>SOCKS / SOCKS4 / SOCKS5</td>
@@ -43,7 +51,7 @@
     </tr>
     <tr>
       <td>WPAD</td>
-      <td><strong>Web Proxy Auto-Discovery</strong>: a mechanism that lets browsers find the PAC file URL automatically via DHCP or DNS, instead of configuring it manually. See <a href="/#wpad">WPAD auto-discovery</a>.</td>
+      <td><strong>Web Proxy Auto-Discovery</strong>: a mechanism that lets browsers find the PAC file URL automatically via DHCP or DNS, instead of configuring it manually. See <a href="/wpad">WPAD auto-discovery</a>.</td>
     </tr>
     <tr>
       <td>wpad.dat</td>
@@ -55,7 +63,7 @@
     </tr>
     <tr>
       <td>DNS resolution</td>
-      <td>Translating a hostname into an IP address. Several PAC helpers (<code>dnsResolve</code>, <code>isResolvable</code>, <code>isInNet</code> with a hostname) trigger a live lookup that blocks evaluation. See <a href="/#perf">Compute-intensive functions</a>.</td>
+      <td>Translating a hostname into an IP address. Several PAC helpers (<code>dnsResolve</code>, <code>isResolvable</code>, <code>isInNet</code> with a hostname) trigger a live lookup that blocks evaluation. See <a href="/performance">Compute-intensive functions</a>.</td>
     </tr>
     <tr>
       <td>RFC 1918</td>
@@ -75,11 +83,11 @@
     </tr>
     <tr>
       <td>HTTPS path stripping</td>
-      <td>For HTTPS requests, browsers pass only scheme, host, and port to the PAC function — the path and query are removed. Path-based matching only works for plain HTTP. See <a href="/#troubleshooting">Troubleshooting</a>.</td>
+      <td>For HTTPS requests, browsers pass only scheme, host, and port to the PAC function — the path and query are removed. Path-based matching only works for plain HTTP. See <a href="/troubleshooting">Troubleshooting</a>.</td>
     </tr>
     <tr>
       <td>MITM (man-in-the-middle)</td>
-      <td>An attacker who intercepts traffic. A PAC file fetched over plain HTTP can be swapped by a MITM to reroute all your traffic — serve PAC files over HTTPS. See <a href="/#security">Security</a>.</td>
+      <td>An attacker who intercepts traffic. A PAC file fetched over plain HTTP can be swapped by a MITM to reroute all your traffic — serve PAC files over HTTPS. See <a href="/security">Security</a>.</td>
     </tr>
     <tr>
       <td>Split tunnelling</td>

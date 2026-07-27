@@ -3,10 +3,15 @@ main = "worker.js"
 compatibility_date = "2026-05-11"
 
 routes = [
-  { pattern = "pac-file-explained.dev/*", zone_name = "pac-file-explained.dev" }
+  { pattern = "pac-file-explained.dev/*", zone_name = "pac-file-explained.dev" },
+  # www is 301-redirected to the apex by the worker. For this route to receive
+  # traffic, a proxied DNS record for "www" must exist in the Cloudflare
+  # dashboard (e.g. CNAME www → pac-file-explained.dev, proxy enabled).
+  { pattern = "www.pac-file-explained.dev/*", zone_name = "pac-file-explained.dev" }
 ]
 
 
 [[rules]]
 type  = "Text"
 globs = ["**/*.html", "**/*.css", "**/client.js", "**/ads.txt"]
+fallthrough = true

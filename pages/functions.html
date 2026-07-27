@@ -281,3 +281,141 @@
   </div>
 
 </section>
+
+<!-- ── IPv6 EX EXTENSIONS ── -->
+<section id="ex-functions" class="anchor-target">
+  <h2>IPv6 extensions — the <em>Ex</em> functions</h2>
+  <p class="section-lead">Microsoft's IPv6-aware variants of the core helpers.</p>
+  <p class="fn-desc">
+    The original Netscape helpers are IPv4-only. Microsoft extended the PAC format with
+    IPv6-capable <code class="icode">Ex</code> variants, implemented by the WinHTTP / WinINET
+    stack (Internet Explorer 10+, legacy Edge, and Windows services that consume PAC files).
+    To activate them, the PAC file must define
+    <code class="icode">FindProxyForURLEx(url, host)</code> instead of
+    <code class="icode">FindProxyForURL</code> — the engine then evaluates that function with
+    the extended helpers available.
+  </p>
+  <div class="alert alert-warn">
+    <strong>Browser support:</strong> Chrome and Firefox do <em>not</em> implement the
+    <code>Ex</code> functions or <code>FindProxyForURLEx</code> — they evaluate plain
+    <code>FindProxyForURL</code> only. Use the <code>Ex</code> family only for PAC files
+    targeting Windows/WinHTTP environments, and always keep a standard
+    <code>FindProxyForURL</code> for everything else.
+  </div>
+
+  <!-- dnsResolveEx -->
+  <div class="fn-card anchor-target" id="dnsResolveEx">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">dnsResolveEx</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">IPv6-aware version of <code>dnsResolve()</code>. Resolves both A (IPv4) and AAAA (IPv6) records and returns <strong>all</strong> addresses as a semicolon-separated list, e.g. <code>"2001:db8::1;192.0.2.10"</code>. Returns an empty string on failure. Like its IPv4 counterpart, every call triggers a blocking DNS lookup — resolve once and reuse the result.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">var</span> list = <span class="fn">dnsResolveEx</span>(host);   <span class="cm">// "2001:db8::1;192.0.2.10"</span>
+<span class="kw">if</span> (!list) { <span class="kw">return</span> <span class="str">"DIRECT"</span>; } <span class="cm">// guard resolution failure</span>
+
+<span class="kw">if</span> (<span class="fn">isInNetEx</span>(list, <span class="str">"fd00::/8"</span>)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;              <span class="cm">// internal IPv6 ULA range</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- isResolvableEx -->
+  <div class="fn-card anchor-target" id="isResolvableEx">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isResolvableEx</span><span class="fn-paren">(</span><span class="fn-param">host</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">IPv6-aware version of <code>isResolvable()</code>. Returns <code>true</code> if <code>host</code> resolves to any IPv4 <em>or</em> IPv6 address. Performs a live, blocking DNS lookup on every call — prefer string checks like <code>dnsDomainIs()</code> where possible.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">if</span> (<span class="fn">isResolvableEx</span>(host)) {
+  <span class="kw">return</span> <span class="str">"DIRECT"</span>;  <span class="cm">// resolvable in internal dual-stack DNS</span>
+}
+<span class="kw">return</span> <span class="str">"PROXY proxy.corp.com:8080"</span>;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- isInNetEx -->
+  <div class="fn-card anchor-target" id="isInNetEx">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">isInNetEx</span><span class="fn-paren">(</span><span class="fn-param">ip</span><span class="fn-paren">, </span><span class="fn-param">ipPrefix</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-bool">→ boolean</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">IPv6-aware version of <code>isInNet()</code>. Instead of a dotted subnet mask it takes <strong>CIDR prefix notation</strong>, and it accepts both IPv4 and IPv6 addresses. <code>ip</code> may be a single address or a semicolon-separated list (as returned by <code>dnsResolveEx</code>); the match succeeds if any address falls inside the prefix.</p>
+      <table class="params-table">
+        <tr><th>Param</th><th>Type</th><th>Description</th></tr>
+        <tr><td>ip</td><td>string</td><td>Address (or semicolon-separated list) to test.</td></tr>
+        <tr><td>ipPrefix</td><td>string</td><td>CIDR range, e.g. <code>"10.0.0.0/8"</code> or <code>"3ffe:8311:ffff::/48"</code>.</td></tr>
+      </table>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">isInNetEx</span>(<span class="str">"10.1.2.3"</span>,    <span class="str">"10.0.0.0/8"</span>)        <span class="cm">// true</span>
+<span class="fn">isInNetEx</span>(<span class="str">"2001:db8::1"</span>, <span class="str">"2001:db8::/32"</span>)     <span class="cm">// true</span>
+<span class="fn">isInNetEx</span>(<span class="str">"192.0.2.1"</span>,   <span class="str">"10.0.0.0/8"</span>)        <span class="cm">// false</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- myIpAddressEx -->
+  <div class="fn-card anchor-target" id="myIpAddressEx">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">myIpAddressEx</span><span class="fn-paren">()</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">IPv6-aware version of <code>myIpAddress()</code>. Returns <strong>all</strong> of the client machine's addresses — IPv6 and IPv4 — as a semicolon-separated list, e.g. <code>"fe80::1;10.1.2.3"</code>. Pair with <code>isInNetEx()</code>, which accepts the list directly.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">var</span> myAddrs = <span class="fn">myIpAddressEx</span>();  <span class="cm">// "fe80::1;10.1.2.3"</span>
+
+<span class="kw">if</span> (<span class="fn">isInNetEx</span>(myAddrs, <span class="str">"10.1.0.0/16"</span>)) {
+  <span class="kw">return</span> <span class="str">"PROXY eu-proxy.corp.com:8080"</span>;  <span class="cm">// EU office subnet</span>
+}
+<span class="kw">return</span> <span class="str">"PROXY us-proxy.corp.com:8080"</span>;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- sortIpAddressList -->
+  <div class="fn-card anchor-target" id="sortIpAddressList">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">sortIpAddressList</span><span class="fn-paren">(</span><span class="fn-param">ipAddressList</span><span class="fn-paren">)</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Sorts a semicolon-separated list of IP addresses into preferred connection order (IPv6 addresses first, following the OS destination-address selection rules). Useful for picking the "best" address out of a <code>dnsResolveEx()</code> result. Returns an empty string if the list is invalid.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="fn">sortIpAddressList</span>(<span class="str">"10.1.2.3;2001:db8::1"</span>)
+<span class="cm">// → "2001:db8::1;10.1.2.3" — IPv6 preferred</span>
+
+<span class="kw">var</span> best = <span class="fn">sortIpAddressList</span>(<span class="fn">dnsResolveEx</span>(host)).split(<span class="str">";"</span>)[<span class="num">0</span>];</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- getClientVersion -->
+  <div class="fn-card anchor-target" id="getClientVersion">
+    <div class="fn-header">
+      <div class="fn-sig"><span class="fn-name">getClientVersion</span><span class="fn-paren">()</span></div>
+      <span class="fn-badge badge-str">→ string</span>
+    </div>
+    <div class="fn-body">
+      <p class="fn-desc">Returns the version of the WPAD engine evaluating the PAC file — <code>"1.0"</code> in every released Windows implementation. Intended to let a PAC file branch on engine capabilities if the format is ever revised.</p>
+      <div class="code-block">
+        <div class="code-header"><span>example</span><button class="copy-btn">copy</button></div>
+        <pre><span class="kw">if</span> (<span class="fn">getClientVersion</span>() === <span class="str">"1.0"</span>) {
+  <span class="cm">// current WinHTTP WPAD engine</span>
+}</pre>
+      </div>
+    </div>
+  </div>
+
+</section>

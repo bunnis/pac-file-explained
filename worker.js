@@ -61,7 +61,7 @@ const PAGES = {
   },
   '/functions': {
     title: 'PAC function reference — PAC Explained',
-    description: 'Every built-in PAC helper function with signatures, parameters, and examples: isPlainHostName, dnsDomainIs, isInNet, dnsResolve, shExpMatch, weekdayRange, and more.',
+    description: 'Every built-in PAC helper function with signatures, parameters, and examples: isPlainHostName, dnsDomainIs, isInNet, dnsResolve, shExpMatch, weekdayRange, plus the IPv6-aware Ex extensions.',
     navLabel: 'Function reference',
     main: functions,
   },
@@ -199,6 +199,8 @@ function buildCSP(nonce) {
       'https://www.googletagservices.com',
       'https://static.cloudflareinsights.com',
       'https://adservice.google.com',
+      // Google consent message (AdSense Privacy & messaging CMP):
+      'https://fundingchoicesmessages.google.com',
     ],
 
     'style-src': [
@@ -229,6 +231,8 @@ function buildCSP(nonce) {
       'https://pagead2.googlesyndication.com',
       'https://ep2.adtrafficquality.google',
       'https://www.google.com',
+      // Google consent message can render in an iframe:
+      'https://fundingchoicesmessages.google.com',
     ],
 
     'object-src':  ["'none'"],
@@ -264,6 +268,9 @@ function servePage(path, meta, status = 200, noAds = false) {
     nonce,
     main:        meta.main,
     noAds,
+    noIndex:     meta.noIndex,
+    // Reference pages get TechArticle structured data in the shell.
+    isRefPage:   i !== -1 && path !== '/',
     prev,
     next,
   });
@@ -298,13 +305,18 @@ const ASSET_HEADERS = {
   // One year cache + one week stale-while-revalidate.
   // Bump the ?v= query (e.g. styles.css?v=2) to bust the cache on changes.
   'Cache-Control': 'public, max-age=31536000, stale-while-revalidate=604800',
-  'Link': '</styles.css?v=1>; rel=preload; as=style',
 };
 
 /* ─── Fetch handler ─────────────────────────────────────────────────────── */
 export default {
   async fetch(request) {
     const url = new URL(request.url);
+
+    /* ── Canonical host: www → apex ───────────────────────────────────── */
+    if (url.hostname === 'www.pac-file-explained.dev') {
+      url.hostname = 'pac-file-explained.dev';
+      return Response.redirect(url.toString(), 301);
+    }
 
     /* ── /styles.css ──────────────────────────────────────────────────── */
     if (url.pathname === '/styles.css') {
@@ -317,7 +329,7 @@ export default {
     }
 
     /* ── /client.js ───────────────────────────────────────────────────── */
-    if (url.pathname.includes('/client.js')) {
+    if (url.pathname === '/client.js') {
       return new Response(clientJs, {
         headers: {
           'Content-Type': 'application/javascript; charset=UTF-8',
@@ -358,12 +370,10 @@ export default {
     /* ── /sitemap.xml ─────────────────────────────────────────────────── */
     if (url.pathname === '/sitemap.xml') {
       const origin  = 'https://pac-file-explained.dev';
-      const lastmod = '2026-06-10';
       const entries = SITEMAP_PATHS.map((p) => {
         const priority = p === '/' ? '1.0' : '0.7';
         return `  <url>
     <loc>${origin}${p}</loc>
-    <lastmod>${lastmod}</lastmod>
     <changefreq>monthly</changefreq>
     <priority>${priority}</priority>
   </url>`;
@@ -394,13 +404,21 @@ ${entries}
     }
 
     /* ── HTML pages (home + standalone pages) ─────────────────────────── */
-    // Normalise /index.html to / and strip a single trailing slash.
-    let path = url.pathname;
-    if (path === '/index.html') path = '/';
-    if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
+    // One canonical URL per page: 301 /index.html and trailing-slash
+    // variants to the clean path instead of serving duplicate 200s.
+    const path = url.pathname;
+    let canonicalPath = path;
+    if (canonicalPath === '/index.html') canonicalPath = '/';
+    if (canonicalPath.length > 1 && canonicalPath.endsWith('/')) {
+      canonicalPath = canonicalPath.replace(/\/+$/, '') || '/';
+    }
 
-    if (PAGES[path]) {
-      return servePage(path, PAGES[path]);
+    if (PAGES[canonicalPath]) {
+      if (canonicalPath !== path) {
+        url.pathname = canonicalPath;
+        return Response.redirect(url.toString(), 301);
+      }
+      return servePage(canonicalPath, PAGES[canonicalPath]);
     }
 
     /* ── 404 fallback (styled page, no ads on error pages) ────────────── */
@@ -408,6 +426,7 @@ ${entries}
       title: 'Page not found — PAC Explained',
       description: 'The page you requested could not be found on PAC Explained.',
       main: notFound,
+      noIndex: true,
     }, 404, true);
   },
 };

@@ -15,17 +15,107 @@ const SITE_ORIGIN = 'https://pac-file-explained.dev';
 const FONTS_HREF =
   'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap';
 
+/* ─── Structured data (JSON-LD) ───────────────────────────────────────────
+   Emitted as inert data blocks (type="application/ld+json" is never executed,
+   so CSP does not apply — the nonce is included anyway for uniformity).
+   • WebSite       — every indexable page
+   • TechArticle   — reference pages (isRefPage)
+   • FAQPage       — /faq only; MUST mirror the visible Q&A in faq.html.  */
+const AUTHOR = {
+  '@type': 'Person',
+  name: 'abskulaity',
+  url: 'https://abskulaity.net',
+  sameAs: ['https://github.com/bunnis'],
+};
+
+const FAQ_JSONLD = [
+  ['What is a PAC file, in one sentence?',
+   'A plain-text JavaScript file with a single FindProxyForURL(url, host) function that the browser calls for every request to decide whether to go direct or through a proxy.'],
+  ["What's the difference between a PAC file and WPAD?",
+   'A PAC file is the configuration script itself. WPAD is the mechanism that lets browsers find that script automatically over DHCP or DNS, so the URL does not have to be configured on every machine.'],
+  ["What's the difference between the PROXY and HTTPS return values?",
+   'PROXY host:port makes the browser talk to the proxy over plain, unencrypted HTTP (HTTPS traffic is still tunnelled through it with CONNECT). HTTPS host:port makes the browser encrypt its connection to the proxy itself with TLS. Keep a PROXY or DIRECT fallback after an HTTPS directive for older clients.'],
+  ['Can a PAC file match on the URL path?',
+   'Only for plain http:// URLs. For https:// requests, browsers strip the path and query before calling the PAC function, so only scheme, host, and port are available.'],
+  ['Do PAC files support IPv6?',
+   'The core helper functions are IPv4-only. Microsoft defined IPv6-aware Ex variants (dnsResolveEx, isInNetEx, myIpAddressEx, and others) that work in the WinHTTP/WinINET stack when the PAC file defines FindProxyForURLEx, but Chrome and Firefox do not implement them.'],
+  ['Why does myIpAddress() return 127.0.0.1?',
+   "Some browsers and OS configurations cannot determine the machine's external interface and return the loopback address instead. Avoid building routing logic on myIpAddress() in those environments; resolve a known internal host instead."],
+  ['How do I make my PAC file fast?',
+   'Put DNS-free checks (isPlainHostName, dnsDomainIs, shExpMatch) first, resolve DNS at most once with dnsResolve() and reuse the result, and always pass a pre-resolved IP to isInNet().'],
+  ['How should I serve a PAC file?',
+   'Over HTTPS, with the MIME type application/x-ns-proxy-autoconfig. The wrong content type causes many browsers to silently ignore the file. For WPAD, name it wpad.dat.'],
+  ["My PAC changes aren't taking effect. Why?",
+   'Browsers cache PAC files aggressively, often for the whole session. Restart the browser, or send a short Cache-Control max-age header during development, and test logic with pacparser outside the browser.'],
+  ['How do I test a PAC file without deploying it?',
+   'Use the live tester on this site for a quick in-browser check, or pacparser/pactester on the command line for the real evaluation engine.'],
+  ['Is the live tester sending my PAC file anywhere?',
+   'No. It evaluates everything locally in your browser and transmits nothing. DNS helpers return simulated results.'],
+  ['Is this an official Mozilla or Google site?',
+   'No. PAC Explained is an independent, community-maintained reference.'],
+];
+
+function renderJsonLd({ title, description, path, nonce, isRefPage }) {
+  const blocks = [];
+
+  blocks.push({
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'PAC Explained',
+    url: SITE_ORIGIN + '/',
+    description:
+      'The complete Proxy Auto-Configuration (PAC) file reference: every function, best practices, security, WPAD, testing tools, and a live tester.',
+    publisher: AUTHOR,
+  });
+
+  if (isRefPage) {
+    blocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'TechArticle',
+      headline: title,
+      description,
+      url: SITE_ORIGIN + path,
+      author: AUTHOR,
+      inLanguage: 'en',
+    });
+  }
+
+  if (path === '/faq') {
+    blocks.push({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: FAQ_JSONLD.map(([q, a]) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
+    });
+  }
+
+  return blocks
+    .map((b) => `<script type="application/ld+json" nonce="${nonce}">${
+      JSON.stringify(b).replace(/</g, '\\u003c')
+    }</script>`)
+    .join('\n');
+}
+
 /* ─── <head> ──────────────────────────────────────────────────────────────
    Mirrors the original index.html head, but title / description / canonical /
    Open Graph fields are per-page. Font loading stays non-render-blocking and
    the theme is applied before first paint to avoid a flash. */
-function renderHead({ title, description, path, nonce, noAds }) {
+function renderHead({ title, description, path, nonce, noAds, noIndex, isRefPage }) {
   const canonical = SITE_ORIGIN + path;
   // AdSense policy: don't serve ads on error / no-content pages (e.g. 404).
   const adsTag = noAds ? '' : `<script async
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8036763385530087"
         crossorigin="anonymous"
         nonce="${nonce}"></script>`;
+  // 404 and other non-pages: keep crawlers out, and don't claim a canonical
+  // URL for a path that doesn't exist.
+  const indexMeta = noIndex
+    ? '<meta name="robots" content="noindex">'
+    : `<link rel="canonical" href="${canonical}">
+<meta property="og:url"          content="${canonical}">`;
   return `<!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -34,14 +124,14 @@ function renderHead({ title, description, path, nonce, noAds }) {
 <title>${title}</title>
 <meta name="description" content="${description}">
 
-<link rel="canonical" href="${canonical}">
+${indexMeta}
 <meta property="og:type"         content="website">
-<meta property="og:url"          content="${canonical}">
 <meta property="og:title"        content="${title}">
 <meta property="og:description"  content="${description}">
-<meta name="twitter:card"        content="summary_large_image">
+<meta name="twitter:card"        content="summary">
 <meta name="twitter:title"       content="${title}">
 <meta name="twitter:description" content="${description}">
+${noIndex ? '' : renderJsonLd({ title, description, path, nonce, isRefPage })}
 
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔀</text></svg>">
 
@@ -136,6 +226,12 @@ const SIDEBAR = `<nav id="sidebar" aria-label="Site navigation">
       <a href="/functions#dateRange" class="fn-link">dateRange()</a>
       <a href="/functions#timeRange" class="fn-link">timeRange()</a>
       <a href="/functions#alert-fn" class="fn-link">alert()</a>
+      <a href="/functions#dnsResolveEx" class="fn-link">dnsResolveEx()</a>
+      <a href="/functions#isResolvableEx" class="fn-link">isResolvableEx()</a>
+      <a href="/functions#isInNetEx" class="fn-link">isInNetEx()</a>
+      <a href="/functions#myIpAddressEx" class="fn-link">myIpAddressEx()</a>
+      <a href="/functions#sortIpAddressList" class="fn-link">sortIpAddressList()</a>
+      <a href="/functions#getClientVersion" class="fn-link">getClientVersion()</a>
     </div>
   </div>
 
@@ -228,13 +324,13 @@ const FOOTER = `<footer class="site-footer">
 /* ─── Full page ─────────────────────────────────────────────────────────────
    `prev` / `next` (each { href, label }) render a reading-flow nav under the
    content — used to chain the reference pages together. */
-export function renderPage({ title, description, path, nonce, main, noAds, prev, next }) {
+export function renderPage({ title, description, path, nonce, main, noAds, noIndex, isRefPage, prev, next }) {
   const pageNav = (prev || next) ? `
 <nav class="page-nav" aria-label="Reference pages">
   ${prev ? `<a class="page-nav-prev" href="${prev.href}"><span>← Previous</span><strong>${prev.label}</strong></a>` : '<span></span>'}
   ${next ? `<a class="page-nav-next" href="${next.href}"><span>Next →</span><strong>${next.label}</strong></a>` : ''}
 </nav>` : '';
-  return `${renderHead({ title, description, path, nonce, noAds })}
+  return `${renderHead({ title, description, path, nonce, noAds, noIndex, isRefPage })}
 <body>
 <div class="site-wrapper">
 
@@ -251,7 +347,7 @@ ${FOOTER}
 </div><!-- /content-area -->
 </div><!-- /site-wrapper -->
 
-<script src="/client.js?v=1" nonce="${nonce}" defer></script>
+<script src="/client.js?v=2" nonce="${nonce}" defer></script>
 </body>
 </html>`;
 }

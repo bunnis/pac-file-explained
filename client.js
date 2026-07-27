@@ -341,6 +341,27 @@
           'if(a.length===6){var f6=a[0]*3600+a[1]*60+a[2];var t6=a[3]*3600+a[4]*60+a[5];return c>=f6&&c<t6;}' +
           'return false;}',
 
+        // Microsoft IPv6 "Ex" extensions — stubbed like their IPv4
+        // counterparts (real DNS is impossible in a browser sandbox).
+        'function isResolvableEx(h){return true;}',
+        'function dnsResolveEx(h){return "";}',
+        'function myIpAddressEx(){return "127.0.0.1";}',
+        'function sortIpAddressList(l){return l?String(l).split(";").map(function(s){return s.trim();}).filter(Boolean).join(";"):"";}',
+        'function getClientVersion(){return "1.0";}',
+
+        // CIDR-based isInNetEx — IPv4 prefixes evaluated for real; IPv6
+        // prefixes return false (simulation limit, same as DNS stubs).
+        'function isInNetEx(ip,prefix){' +
+          'var parts=String(prefix).split("/");' +
+          'if(parts.length!==2) return false;' +
+          'var net=parts[0],bits=parseInt(parts[1],10);' +
+          'if(!/^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(net)||isNaN(bits)||bits<0||bits>32) return false;' +
+          'var mask=bits===0?0:(0xffffffff<<(32-bits))>>>0;' +
+          'return String(ip).split(";").some(function(a){' +
+            'a=a.trim();' +
+            'if(!/^\\d+\\.\\d+\\.\\d+\\.\\d+$/.test(a)) return false;' +
+            'return((_ipInt(a)&mask)>>>0)===((_ipInt(net)&mask)>>>0);});}',
+
         // Silence alert — no browser pop-ups in the tester
         'var alert=function(){};',
       ].join('\n');
@@ -350,9 +371,11 @@
       var exec = [
         '(function(){',
         '  try{',
-        '    if(typeof FindProxyForURL!=="function")',
-        '      throw new Error("FindProxyForURL is not defined in the PAC source");',
-        '    var r=FindProxyForURL(' + JSON.stringify(url) + ',' + JSON.stringify(host) + ');',
+        '    var fn=typeof FindProxyForURL==="function"?FindProxyForURL:',
+        '      (typeof FindProxyForURLEx==="function"?FindProxyForURLEx:null);',
+        '    if(!fn)',
+        '      throw new Error("Neither FindProxyForURL nor FindProxyForURLEx is defined in the PAC source");',
+        '    var r=fn(' + JSON.stringify(url) + ',' + JSON.stringify(host) + ');',
         '    window[' + JSON.stringify(cbKey) + '](String(r),null);',
         '  }catch(e){',
         '    window[' + JSON.stringify(cbKey) + '](null,e.message);',
